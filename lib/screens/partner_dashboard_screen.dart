@@ -1259,9 +1259,37 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
         setState(() {
           _bizImageUrl = url;
         });
+        final editingId = _editingBusinessId;
+        if (editingId != null && editingId.isNotEmpty) {
+          final payload = _buildBusinessPayload();
+          if (payload != null && payload['_validationError'] == null) {
+            final ok = await Provider.of<PartnerProvider>(context, listen: false)
+                .updateBusiness(editingId, payload);
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  ok
+                      ? 'Business image auto-saved'
+                      : 'Image uploaded but auto-save failed',
+                ),
+              ),
+            );
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Image uploaded. Complete required fields to auto-save'),
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error uploading business image: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to upload business image')),
+      );
     }
   }
 
@@ -1283,9 +1311,37 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
         setState(() {
           _amenityImageUrl = url;
         });
+        final editingId = _editingAmenityId;
+        if (editingId != null && editingId.isNotEmpty) {
+          final payload = _buildAmenityPayload();
+          if (payload != null && payload['_validationError'] == null) {
+            final ok = await Provider.of<PartnerProvider>(context, listen: false)
+                .updateAmenity(editingId, payload);
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  ok
+                      ? 'Amenity image auto-saved'
+                      : 'Image uploaded but auto-save failed',
+                ),
+              ),
+            );
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Image uploaded. Complete required fields to auto-save'),
+              ),
+            );
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error uploading amenity image: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to upload amenity image')),
+      );
     }
   }
 
@@ -3661,6 +3717,27 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                     SizedBox(height: w(4)),
                     Row(
                       children: [
+                        if (_bizImageUrl != null) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(w(8)),
+                            child: Image.network(
+                              _bizImageUrl!,
+                              width: w(44),
+                              height: w(44),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: w(44),
+                                height: w(44),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE9EDF2),
+                                  borderRadius: BorderRadius.circular(w(8)),
+                                ),
+                                child: Icon(Icons.image, size: w(20), color: const Color(0xFF7A8594)),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: w(8)),
+                        ],
                         Expanded(
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: w(12), vertical: w(12)),
@@ -4131,7 +4208,11 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                               border: Border.all(color: const Color(0xFFCBD0DC), width: 1),
                             ),
                             child: Text(
-                              _bizImageUrl != null ? 'Image uploaded' : 'No image selected',
+                              _bizImageUrl != null
+                                  ? (_editingBusinessId != null
+                                      ? 'Image uploaded (auto-saved)'
+                                      : 'Image uploaded (draft)')
+                                  : 'No image selected',
                               style: GoogleFonts.sourceSans3(
                                 fontSize: fs(14),
                                 color: const Color(0xFF09101D).withOpacity(0.6),
@@ -4694,6 +4775,27 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                     SizedBox(height: w(4)),
                     Row(
                       children: [
+                        if (_amenityImageUrl != null) ...[
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(w(8)),
+                            child: Image.network(
+                              _amenityImageUrl!,
+                              width: w(44),
+                              height: w(44),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: w(44),
+                                height: w(44),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE9EDF2),
+                                  borderRadius: BorderRadius.circular(w(8)),
+                                ),
+                                child: Icon(Icons.image, size: w(20), color: const Color(0xFF7A8594)),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: w(8)),
+                        ],
                         Expanded(
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: w(12), vertical: w(12)),
@@ -4703,7 +4805,11 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                               border: Border.all(color: const Color(0xFFCBD0DC), width: 1),
                             ),
                             child: Text(
-                              _amenityImageUrl != null ? 'Image uploaded' : 'No image selected',
+                              _amenityImageUrl != null
+                                  ? (_editingAmenityId != null
+                                      ? 'Image uploaded (auto-saved)'
+                                      : 'Image uploaded (draft)')
+                                  : 'No image selected',
                               style: GoogleFonts.sourceSans3(
                                 fontSize: fs(14),
                                 color: const Color(0xFF09101D).withOpacity(0.6),
