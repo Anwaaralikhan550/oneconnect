@@ -1,0 +1,685 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ───────────────────────────────────────────────
+
+enum BusinessType {
+  RESTAURANT
+  RETAIL_STORE
+  SERVICE_PROVIDER
+  ONLINE_BUSINESS
+  OTHER
+}
+
+enum PartnerStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ServiceType {
+  LAUNDRY
+  PLUMBER
+  ELECTRICIAN
+  PAINTER
+  CARPENTER
+  BARBER
+  MAID
+  SALON
+  REAL_ESTATE
+  DOCTOR
+  WATER
+  GAS
+}
+
+enum BusinessCategory {
+  STORE
+  SOLAR
+  BANK
+  RESTAURANT
+  REAL_ESTATE
+  HOME_CHEF
+}
+
+enum AmenityType {
+  MASJID
+  PARK
+  GYM
+  HEALTHCARE
+  SCHOOL
+  PHARMACY
+  CAFE
+  ADMIN
+}
+
+enum FavoriteTargetType {
+  SERVICE_PROVIDER
+  BUSINESS
+  AMENITY
+  PROPERTY
+}
+
+enum NotificationType {
+  PROMOTION
+  REVIEW
+  BOOKING
+  SYSTEM
+}
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+enum ContentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+// ─── TABLES ──────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  passwordHash    String
+  phone           String?
+  profilePhotoUrl String?
+  bio             String?
+  address         String?
+  country         String?
+  gender          String?
+  occupation      String?
+  dateOfBirth     DateTime?
+  fcmToken        String?
+  locationLat     Float?
+  locationLng     Float?
+  isBanned        Boolean  @default(false)
+  notifySound          Boolean @default(true)
+  notifyVibrate        Boolean @default(true)
+  notifyEmailUpdates   Boolean @default(true)
+  notifySmsUpdates     Boolean @default(false)
+  notifyPushUpdates    Boolean @default(true)
+  notifyEmailReminders Boolean @default(true)
+  notifySmsReminders   Boolean @default(false)
+  notifyPushReminders  Boolean @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reviews       Review[]
+  reviewVotes   ReviewVote[]
+  favorites     Favorite[]
+  searchHistory SearchHistory[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  bookings      Booking[]      @relation("UserBookings")
+
+  @@map("users")
+}
+
+model Partner {
+  id              String        @id @default(uuid())
+  businessId      String        @unique // System-generated ID for login (e.g., "OC-2024-00001")
+  businessName    String
+  ownerFullName   String
+  businessEmail   String        @unique
+  passwordHash    String
+  businessType    BusinessType
+  status          PartnerStatus @default(PENDING_REVIEW)
+  address         String?
+  area            String?
+  city            String?
+  country         String?       @default("Pakistan")
+  isBusinessOpen  Boolean       @default(false)
+  openingTime     String?       // "09:00"
+  closingTime     String?       // "18:00"
+  rating          Float         @default(0)
+  profilePhotoUrl String?
+  description     String?
+  followUsEnabled Boolean       @default(true)
+  facebookUrl     String?
+  instagramUrl    String?
+  whatsapp        String?
+  websiteUrl      String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  phones           PartnerPhone[]
+  operatingDays    PartnerOperatingDay[]
+  media            PartnerMedia[]
+  partnerCategories PartnerCategory[]
+  serviceProviders ServiceProvider[]
+  businesses       Business[]
+  properties       Property[]
+  amenities        Amenity[]
+  promotions       Promotion[]
+  refreshTokens    PartnerRefreshToken[]
+  adminFavourites  AdminFavouritePartner[]
+
+  @@map("partners")
+}
+
+model PartnerPhone {
+  id          String  @id @default(uuid())
+  partnerId   String
+  phoneNumber String
+  countryCode String  @default("+92")
+  isPrimary   Boolean @default(false)
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_phones")
+}
+
+model PartnerOperatingDay {
+  id        String @id @default(uuid())
+  partnerId String
+  dayCode   String // Su, M, T, W, Th, F, S
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, dayCode])
+  @@map("partner_operating_days")
+}
+
+model PartnerMedia {
+  id         String    @id @default(uuid())
+  partnerId  String
+  mediaType  MediaType
+  fileUrl    String
+  fileName   String?
+  fileSizeKb Int?
+  createdAt  DateTime  @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_media")
+}
+
+model PartnerCategory {
+  id         String @id @default(uuid())
+  partnerId  String
+  categoryId String
+
+  partner  Partner         @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  category ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, categoryId])
+  @@map("partner_categories")
+}
+
+model ServiceCategory {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  slug      String  @unique
+  iconUrl   String?
+  isActive  Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  serviceProviders ServiceProvider[]
+  partnerCategories PartnerCategory[]
+
+  @@map("service_categories")
+}
+
+model LocationMaster {
+  id        String   @id @default(uuid())
+  country   String   @default("Pakistan")
+  city      String
+  area      String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([city, area])
+  @@index([city, isActive])
+  @@map("location_master")
+}
+
+model ServiceProvider {
+  id                 String      @id @default(uuid())
+  partnerId          String?
+  categoryId         String
+  serviceType        ServiceType
+  name               String
+  phone              String?
+  rating             Float       @default(0)
+  reviewCount        Int         @default(0)
+  address            String?
+  city               String?     @default("Lahore")
+  serviceCharge      Float?
+  isTopRated         Boolean     @default(false)
+  jobsCompleted      Int         @default(0)
+  vendorId           String?
+  responseTime       String?     // "Within 1 hour"
+  workingSince       String?     // "2018"
+  imageUrl           String?
+
+  // Doctor-specific fields
+  patientsCount      Int?
+  doctorId           String?
+  experienceYears    Int?
+  hospitalName       String?
+  consultationCharge Float?
+
+  contentStatus ContentStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partner  Partner?         @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  category ServiceCategory  @relation(fields: [categoryId], references: [id])
+  skills   ServiceProviderSkill[]
+  reviews  Review[]
+  favorites Favorite[]
+  bookings Booking[] @relation("ProviderBookings")
+  media    ProviderMedia[]
+  properties Property[]
+
+  @@index([serviceType])
+  @@index([city])
+  @@index([rating])
+  @@index([contentStatus])
+  @@map("service_providers")
+}
+
+model ProviderMedia {
+  id                String    @id @default(uuid())
+  serviceProviderId String
+  mediaType         MediaType
+  fileUrl           String
+  fileName          String?
+  fileSizeKb        Int?
+  createdAt         DateTime  @default(now())
+
+  serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+
+  @@index([serviceProviderId])
+  @@map("provider_media")
+}
+
+model ServiceProviderSkill {
+  id                String @id @default(uuid())
+  serviceProviderId String
+  tagName           String // "Minor leak repair", "Cardiologist", etc.
+
+  serviceProvider ServiceProvider @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+
+  @@map("service_provider_skills")
+}
+
+model Business {
+  id         String           @id @default(uuid())
+  partnerId  String?
+  name       String
+  category   BusinessCategory
+  rating     Float            @default(0)
+  reviewCount Int             @default(0)
+  location   String?
+  isOpen     Boolean          @default(true)
+  openingTime String?
+  closingTime String?
+  operatingDays String[]      @default([])
+  servicesOffered String[]    @default([])
+  followersCount Int          @default(0)
+  imageUrl   String?
+  phone      String?
+  description String?
+  facebookUrl String?
+  instagramUrl String?
+  whatsapp    String?
+  websiteUrl  String?
+  contentStatus ContentStatus   @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  partner   Partner?   @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  reviews   Review[]
+  favorites Favorite[]
+  media     BusinessMedia[]
+  promotions Promotion[]
+
+  @@index([contentStatus])
+  @@map("businesses")
+}
+
+model BusinessMedia {
+  id         String    @id @default(uuid())
+  businessId String
+  mediaType  MediaType
+  fileUrl    String
+  fileName   String?
+  fileSizeKb Int?
+  createdAt  DateTime  @default(now())
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("business_media")
+}
+
+model Amenity {
+  id          String     @id @default(uuid())
+  partnerId   String?
+  name        String
+  amenityType AmenityType
+  location    String?
+  isOpen      Boolean    @default(true)
+  rating      Float      @default(0)
+  reviewCount Int        @default(0)
+  openingTime String?
+  closingTime String?
+  operatingDays String[] @default([])
+  servicesOffered String[] @default([])
+  followersCount Int       @default(0)
+  imageUrl    String?
+  phone       String?
+  description String?
+  facebookUrl String?
+  instagramUrl String?
+  whatsapp    String?
+  websiteUrl  String?
+  contentStatus ContentStatus @default(PENDING)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  partner   Partner?   @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  reviews   Review[]
+  favorites Favorite[]
+  media     AmenityMedia[]
+
+  @@index([contentStatus])
+  @@map("amenities")
+}
+
+model AmenityMedia {
+  id         String    @id @default(uuid())
+  amenityId  String
+  mediaType  MediaType
+  fileUrl    String
+  fileName   String?
+  fileSizeKb Int?
+  createdAt  DateTime  @default(now())
+
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@map("amenity_media")
+}
+
+model Property {
+  id            String        @id @default(uuid())
+  partnerId     String?
+  serviceProviderId String?
+  title         String
+  location      String?
+  beds          Int?
+  baths         Int?
+  kitchen       Int?
+  propertyType  String? // "House", "Apartment", "Plot"
+  purpose       String? // "RENTAL", "SALE"
+  listingStatus String? // "SUPER_HOT", "RENTAL", "FEATURED"
+  price         Float?
+  mainImageUrl  String?
+  description   String?
+  sqft          Float?
+  contentStatus ContentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  partner   Partner?         @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  serviceProvider ServiceProvider? @relation(fields: [serviceProviderId], references: [id], onDelete: SetNull)
+  images    PropertyImage[]
+  favorites Favorite[]
+
+  @@index([partnerId])
+  @@index([serviceProviderId])
+  @@index([contentStatus])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String @id @default(uuid())
+  propertyId String
+  imageUrl   String
+  sortOrder  Int    @default(0)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@map("property_images")
+}
+
+model Promotion {
+  id          String   @id @default(uuid())
+  partnerId   String
+  businessId  String?
+  title       String
+  imageUrl    String?
+  price       Float?
+  discountPct Float?
+  description String?
+  isActive      Boolean       @default(true)
+  contentStatus ContentStatus @default(PENDING)
+  expiresAt     DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  @@index([contentStatus])
+  @@map("promotions")
+}
+
+model Review {
+  id                String  @id @default(uuid())
+  userId            String
+  rating            Float
+  ratingText        String? // "Excellent", "Good", etc.
+  reviewText        String?
+  serviceProviderId String?
+  businessId        String?
+  amenityId         String?
+  createdAt         DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceProvider ServiceProvider? @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+  business        Business?        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  amenity         Amenity?         @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  votes           ReviewVote[]
+
+  @@index([serviceProviderId])
+  @@index([businessId])
+  @@index([amenityId])
+  @@map("reviews")
+}
+
+model ReviewVote {
+  id        String   @id @default(uuid())
+  reviewId  String
+  userId    String
+  voteType  String   // "helpful" or "unhelpful"
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@map("review_votes")
+}
+
+model Favorite {
+  id                String             @id @default(uuid())
+  userId            String
+  targetType        FavoriteTargetType
+  serviceProviderId String?
+  businessId        String?
+  amenityId         String?
+  propertyId        String?
+  createdAt         DateTime           @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceProvider ServiceProvider? @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+  business        Business?        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  amenity         Amenity?         @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+  property        Property?        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, serviceProviderId])
+  @@unique([userId, targetType, businessId])
+  @@unique([userId, targetType, amenityId])
+  @@unique([userId, targetType, propertyId])
+  @@map("favorites")
+}
+
+model SearchHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  query     String
+  category  String?  // "Shop", "Service"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("search_history")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  isRead    Boolean          @default(false)
+  data      Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model AdminOffice {
+  id         String  @id @default(uuid())
+  name       String
+  officeType String  // "administration", "emergency"
+  rating     Float   @default(0)
+  phone      String?
+  isOpen     Boolean @default(true)
+  address    String?
+  imageUrl   String?
+
+  @@map("admin_offices")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+model PartnerRefreshToken {
+  id        String   @id @default(uuid())
+  partnerId String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@map("partner_refresh_tokens")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens    AdminRefreshToken[]
+  favouritePartners AdminFavouritePartner[]
+
+  @@map("admins")
+}
+
+model AdminRefreshToken {
+  id        String   @id @default(uuid())
+  adminId   String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@map("admin_refresh_tokens")
+}
+
+model AdminFavouritePartner {
+  id        String   @id @default(uuid())
+  adminId   String
+  partnerId String
+  createdAt DateTime @default(now())
+
+  admin   Admin   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, partnerId])
+  @@map("admin_favourite_partners")
+}
+
+model Booking {
+  bookingId   String        @id @default(uuid())
+  customerId  String
+  providerId  String
+  serviceType ServiceType
+  status      BookingStatus @default(PENDING)
+  bookingDate DateTime
+  userLatitude Float?
+  userLongitude Float?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  customer User            @relation("UserBookings", fields: [customerId], references: [id], onDelete: Cascade)
+  provider ServiceProvider @relation("ProviderBookings", fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, createdAt])
+  @@index([providerId, createdAt])
+  @@index([status])
+  @@map("bookings")
+}

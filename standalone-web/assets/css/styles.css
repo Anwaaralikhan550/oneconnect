@@ -1,0 +1,713 @@
+/* ==============================================
+   RESET AND BASE STYLES
+   ============================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    min-height: 100vh;
+    line-height: 1;
+}
+
+/* ==============================================
+   MAIN CONTAINER
+   ============================================== */
+.container {
+    width: 100%;
+    max-width: 390px;
+    min-height: 844px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ==============================================
+   HEADER SECTION
+   ============================================== */
+.header {
+    width: 100%;
+    height: 238px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 0 0 75px 75px;
+    overflow: hidden;
+}
+
+.header-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/header_background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 0 0 75px 75px;
+}
+
+.header-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #5DE0E6 15%, #054870 100%);
+    border-radius: 0 0 75px 75px;
+}
+
+/* ==============================================
+   MAIN CONTENT
+   ============================================== */
+.main-content {
+    width: 100%;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+/* ==============================================
+   TITLE SECTION
+   ============================================== */
+.title-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+.main-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 30px;
+    line-height: 1.15;
+    color: #000000;
+    text-align: center;
+    width: 100%;
+    max-width: 308px;
+}
+
+.subtitle {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.75);
+    text-align: center;
+    width: 100%;
+    max-width: 233px;
+}
+
+/* ==============================================
+   DIVIDER SECTIONS
+   ============================================== */
+.divider-section {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    width: 100%;
+    justify-content: center;
+    padding: 5px 0;
+}
+
+.divider-line {
+    width: 80px;
+    height: 1px;
+    background-color: #9F9F9F;
+}
+
+.divider-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.21;
+    color: rgba(0, 0, 0, 0.75);
+    white-space: nowrap;
+}
+
+.or-divider-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    justify-content: center;
+}
+
+.or-divider-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.21;
+    color: #545454;
+    white-space: nowrap;
+}
+
+/* ==============================================
+   PHONE INPUT SECTION
+   ============================================== */
+.phone-input-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+.phone-input-container {
+    width: 326px;
+    height: 62px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    gap: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.phone-input-container:focus-within {
+    border-color: #2388ff;
+    box-shadow: 0px 4px 7px rgba(35, 136, 255, 0.15);
+}
+
+.country-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.flag-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.country-code {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.1;
+    color: #19213d;
+}
+
+.chevron-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.input-divider {
+    width: 1px;
+    height: 30px;
+    background-color: #e0e0e0;
+}
+
+.phone-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.1;
+    color: #19213d;
+    background: transparent;
+}
+
+.phone-input::placeholder {
+    color: #999999;
+}
+
+.help-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ==============================================
+   CONTINUE BUTTON
+   ============================================== */
+.button-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.continue-button {
+    width: 318px;
+    height: 44px;
+    background: linear-gradient(180deg, #02A6C3 0%, #0097B2 100%);
+    border: 4px solid #008EA8;
+    border-radius: 6px;
+    box-shadow: 0px 4px 8px rgba(0, 151, 178, 0.3);
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.continue-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0px 6px 12px rgba(0, 151, 178, 0.4);
+}
+
+.continue-button:active {
+    transform: translateY(0);
+}
+
+.arrow-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ==============================================
+   SOCIAL SIGN-IN SECTION
+   ============================================== */
+.social-signin-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.social-buttons {
+    display: flex;
+    align-items: center;
+    gap: 55px;
+}
+
+.social-button {
+    width: 55px;
+    height: 50px;
+    background: #ffffff;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0px 0px 4px 2px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 2px 8px 2px rgba(0, 0, 0, 0.3);
+}
+
+.social-button:active {
+    transform: translateY(0);
+}
+
+.social-icon {
+    max-width: 30px;
+    max-height: 30px;
+}
+
+.google-button .social-icon {
+    width: 25px;
+    height: 25px;
+}
+
+.apple-button .social-icon {
+    width: 23px;
+    height: 29px;
+}
+
+.email-button .social-icon {
+    width: 27px;
+    height: 22px;
+}
+
+/* ==============================================
+   TERMS OF SERVICE SECTION
+   ============================================== */
+.terms-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 5px 0;
+    text-align: center;
+}
+
+.terms-intro {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 1.17;
+    color: rgba(17, 18, 20, 0.8);
+}
+
+.terms-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.terms-link {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    line-height: 1.198;
+    color: #000000;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.terms-link:hover {
+    color: #0097B2;
+}
+
+.terms-separator {
+    font-size: 11px;
+    color: rgba(17, 18, 20, 0.8);
+    margin: 0 5px;
+}
+
+/* ==============================================
+   MODAL STYLES
+   ============================================== */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.country-modal,
+.help-modal {
+    background: #ffffff;
+    border-radius: 20px;
+    max-width: 350px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: #000000;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.country-list {
+    padding: 10px 0;
+}
+
+.country-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.country-option:hover {
+    background-color: #f5f5f5;
+}
+
+.country-flag {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.emoji-flag {
+    font-size: 20px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.country-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.country-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: #000000;
+}
+
+.country-phone {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    color: #666666;
+}
+
+.modal-content {
+    padding: 20px;
+}
+
+.modal-content p {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333333;
+}
+
+/* ==============================================
+   RESPONSIVE DESIGN
+   ============================================== */
+
+/* Tablet Styles */
+@media (min-width: 768px) {
+    .container {
+        max-width: 500px;
+        min-height: 100vh;
+    }
+    
+    .main-content {
+        padding: 30px 40px;
+    }
+    
+    .main-title {
+        font-size: 34px;
+    }
+    
+    .subtitle {
+        font-size: 18px;
+    }
+    
+    .phone-input-container {
+        width: 380px;
+    }
+    
+    .continue-button {
+        width: 380px;
+        height: 48px;
+    }
+    
+    .social-buttons {
+        gap: 65px;
+    }
+    
+    .social-button {
+        width: 60px;
+        height: 55px;
+    }
+}
+
+/* Desktop Styles */
+@media (min-width: 1024px) {
+    .container {
+        max-width: 600px;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0px 10px 50px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+    }
+    
+    .main-content {
+        padding: 40px 50px;
+    }
+    
+    .main-title {
+        font-size: 36px;
+    }
+    
+    .subtitle {
+        font-size: 20px;
+    }
+    
+    .phone-input-container {
+        width: 450px;
+        height: 68px;
+    }
+    
+    .continue-button {
+        width: 450px;
+        height: 52px;
+        font-size: 18px;
+    }
+    
+    .social-buttons {
+        gap: 75px;
+    }
+    
+    .social-button {
+        width: 65px;
+        height: 60px;
+    }
+    
+    .social-icon {
+        max-width: 35px;
+        max-height: 35px;
+    }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 375px) {
+    .container {
+        max-width: 100%;
+    }
+    
+    .main-content {
+        padding: 20px 20px;
+    }
+    
+    .main-title {
+        font-size: 26px;
+    }
+    
+    .subtitle {
+        font-size: 14px;
+    }
+    
+    .phone-input-container {
+        width: 300px;
+    }
+    
+    .continue-button {
+        width: 300px;
+    }
+    
+    .social-buttons {
+        gap: 40px;
+    }
+    
+    .social-button {
+        width: 50px;
+        height: 45px;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+    .container {
+        min-height: 100vh;
+    }
+    
+    .header {
+        height: 180px;
+    }
+    
+    .main-content {
+        gap: 15px;
+    }
+    
+    .title-section {
+        gap: 15px;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .header-background {
+        background-image: url('../images/header_background.png');
+    }
+}
+
+/* Print Styles */
+@media print {
+    .modal-overlay {
+        display: none !important;
+    }
+    
+    .container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    /* This can be implemented if dark mode is required */
+    /* Currently keeping light theme as per Figma design */
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneConnect Admin - Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        OneConnect
+        <small>Admin Panel</small>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html" class="active"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
+        <li><a href="partners.html"><span class="nav-icon">&#9670;</span> Partners</a></li>
+        <li><a href="favourites.html"><span class="nav-icon">&#9829;</span> Favourites</a></li>
+        <li><a href="content.html"><span class="nav-icon">&#9733;</span> Content Approval</a></li>
+        <li><a href="users.html"><span class="nav-icon">&#9678;</span> Users</a></li>
+        <li><a href="reviews.html"><span class="nav-icon">&#10029;</span> Reviews</a></li>
+        <li><a href="properties.html"><span class="nav-icon">&#8962;</span> Properties</a></li>
+        <li><a href="bookings.html"><span class="nav-icon">&#128197;</span> Bookings</a></li>
+        <li><a href="offices.html"><span class="nav-icon">&#9873;</span> Offices</a></li>
+        <li><a href="notifications.html"><span class="nav-icon">&#9993;</span> Notifications</a></li>
+        <li><a href="#" id="btn-logout" class="nav-logout"><span class="nav-icon">&#8594;</span> Sign Out</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="admin-info">
+          <div id="admin-name">Admin</div>
+          <div id="admin-email" style="font-size:11px; opacity:0.5;"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Overview of your OneConnect platform</p>
+      </div>
+
+      <div id="stats-grid" class="stats-grid">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+
+      <!-- Analytics Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Monthly Signups (Last 12 Months)</h3>
+          <div class="chart-container">
+            <canvas id="signups-chart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Top 10 Searched Keywords</h3>
+          <div class="chart-container">
+            <canvas id="searches-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Recent Pending Items</h2>
+        </div>
+        <div class="card-body" id="pending-list">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
+

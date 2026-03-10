@@ -1,0 +1,88 @@
+=== ONECONNECT PROJECT CLEANUP LOG ===
+Timestamp: 01 Oct 2025 20:41:52
+Backup created: oneconnect_backup_2025-10-01_203714.tar.gz
+
+=== PHASE 1: ANALYZING DUPLICATES ===
+DELETED: ./assets/images/footer_scan_icon1.svg (duplicate of ./assets/icons/scan_1.svg)
+DELETED: ./assets/images/scan_part_1.svg (duplicate of ./assets/icons/scan_1.svg)
+DELETED: ./assets/images/search_icon_header.svg (duplicate of ./assets/icons/search_icon.svg)
+DELETED: ./assets/images/service_provider_3.png (duplicate of ./assets/images/provider_3.png)
+DELETED: ./assets/images/vector_2.svg (duplicate of ./assets/images/splash/vector_2.svg)
+DELETED: ./assets/images/saadullah_tunio_profile.png (duplicate of ./assets/images/review_profile_4.png)
+DELETED: ./assets/images/review_profile_1.png (duplicate of ./assets/images/ahmed_raza_profile.png)
+DELETED: ./assets/images/thumbs_up_icon.svg (duplicate of ./assets/images/thumbs_up.svg)
+SKIPPED: ./assets/images/store_1.jpg (referenced in code)
+DELETED: ./assets/images/store_image_1.png (duplicate of ./assets/images/profile_placeholder.png)
+DELETED: ./assets/images/thumbs_down_icon.svg (duplicate of ./assets/images/thumbs_down.svg)
+SKIPPED: ./assets/images/partner_header_bg.png (referenced in code)
+SKIPPED: ./assets/images/partner_profile.png (referenced in code)
+DELETED: ./assets/images/partner_profile_dashboard.png (duplicate of ./assets/images/partner_login_profile.png)
+DELETED: ./assets/images/location_icon.svg (duplicate of ./assets/icons/location.svg)
+SKIPPED: ./assets/images/electrician_profile_2.png (referenced in code)
+SKIPPED: ./assets/images/provider_1.png (referenced in code)
+DELETED: ./assets/images/call_complete.svg (duplicate of ./assets/icons/call.svg)
+SKIPPED: ./assets/images/footer_call_icon.svg (referenced in code)
+DELETED: ./assets/images/footer_profile_icon.svg (duplicate of ./assets/icons/user_1.svg)
+DELETED: ./assets/images/profile_main_part.svg (duplicate of ./assets/icons/user_1.svg)
+SKIPPED: ./assets/images/photo_3_portrait.png (referenced in code)
+DELETED: ./assets/images/door_icon_large.svg (duplicate of ./assets/icons/door_open_2.svg)
+DELETED: ./assets/images/service_provider_2.png (duplicate of ./assets/images/provider_2.png)
+DELETED: ./assets/images/footer_home_icon2.svg (duplicate of ./assets/icons/home_stroke_2.svg)
+DELETED: ./assets/images/home_sub_part.svg (duplicate of ./assets/icons/home_stroke_2.svg)
+DELETED: ./assets/images/back_arrow_search.svg (duplicate of ./assets/icons/back_arrow.svg)
+DELETED: ./assets/images/search_icon_small.svg (duplicate of ./assets/icons/search_small.svg)
+DELETED: ./assets/images/footer_profile_icon_figma.svg (duplicate of ./assets/images/figma_profile_icon.svg)
+SKIPPED: ./assets/images/profile_icon.svg (referenced in code)
+DELETED: ./assets/images/footer_scan_icon4.svg (duplicate of ./assets/icons/scan_4.svg)
+DELETED: ./assets/images/scan_part_4.svg (duplicate of ./assets/icons/scan_4.svg)
+DELETED: ./assets/images/footer_call_icon_figma.svg (duplicate of ./assets/images/call_icon.svg)
+DELETED: ./assets/images/signupbg2.png (duplicate of ./assets/images/oneconnect_logo.png)
+SKIPPED: ./assets/images/splash/oneconnect_logo_full.png (referenced in code)
+DELETED: ./assets/images/search_sub_part.svg (duplicate of ./assets/images/footer_search_icon2.svg)
+DELETED: ./assets/images/review_profile_3.png (duplicate of ./assets/images/ahmed_raza_profile_2.png)
+SKIPPED: ./assets/images/photo_2_square.png (referenced in code)
+DELETED: ./assets/images/door_icon_small.svg (duplicate of ./assets/icons/door_open_1.svg)
+DELETED: ./assets/images/main_header_bg.png (duplicate of ./assets/images/email_signup_header_bg.png)
+DELETED: ./assets/images/search_main_part.svg (duplicate of ./assets/images/footer_search_icon.svg)
+DELETED: ./assets/images/splash/circle_base.svg (duplicate of ./assets/images/circle_bg.svg)
+DELETED: ./assets/images/scan_part_3.svg (duplicate of ./assets/images/footer_scan_icon3.svg)
+DELETED: ./assets/images/close_icon.svg (duplicate of ./assets/icons/close_icon.svg)
+SKIPPED: ./assets/images/photo_1_portrait.png (referenced in code)
+DELETED: ./assets/images/footer_scan_icon2.svg (duplicate of ./assets/icons/scan_2.svg)
+DELETED: ./assets/images/scan_part_2.svg (duplicate of ./assets/icons/scan_2.svg)
+SKIPPED: ./assets/images/pin_location_map.png (referenced in code)
+SKIPPED: ./assets/images/map_view_step4.png (referenced in code)
+DELETED: ./assets/images/profile_circle.png (duplicate of ./assets/images/oneconnect_logo_circle.png)
+DELETED: ./assets/images/signupbg1.png (duplicate of ./assets/images/oneconnect_logo_circle.png)
+DELETED: ./assets/images/footer_profile_icon2.svg (duplicate of ./assets/icons/user_2.svg)
+DELETED: ./assets/images/profile_sub_part.svg (duplicate of ./assets/icons/user_2.svg)
+DELETED: ./assets/images/vector_1.svg (duplicate of ./assets/images/splash/vector_1.svg)
+DELETED: ./assets/images/review_online_indicator_2.png (duplicate of ./assets/images/online_status_green_2.png)
+SKIPPED: ./assets/images/star_icon.svg (referenced in code)
+DELETED: ./assets/images/partner_dashboard_bg_new.png (duplicate of ./assets/images/partner_dashboard_bg.png)
+SKIPPED: ./assets/images/makhni_handi_promo.png (referenced in code)
+SKIPPED: ./assets/images/splash/background.png (referenced in code)
+DELETED: ./assets/images/splash/splash_background.png (duplicate of ./assets/images/background.png)
+SKIPPED: ./assets/images/services_hub_header_bg.png (referenced in code)
+SKIPPED: ./assets/images/salman_raza_profile.png (referenced in code)
+DELETED: ./assets/images/notification_check_1.svg (duplicate of ./assets/images/check_icon.svg)
+DELETED: ./assets/images/notification_check_2.svg (duplicate of ./assets/images/check_icon.svg)
+SKIPPED: ./assets/images/congratulations_step7.png (referenced in code)
+DELETED: ./assets/images/footer_home_icon.svg (duplicate of ./assets/icons/home_stroke_1.svg)
+DELETED: ./assets/images/home_main_part.svg (duplicate of ./assets/icons/home_stroke_1.svg)
+DELETED: ./assets/images/review_online_indicator_1.png (duplicate of ./assets/images/online_status_green.png)
+
+=== PHASE 2: REMOVING EMPTY DIRECTORIES ===
+DELETED EMPTY DIR: ./android/.gradle/8.12/expanded
+DELETED EMPTY DIR: ./android/.gradle/8.12/vcsMetadata
+DELETED EMPTY DIR: ./android/.gradle/kotlin/errors
+DELETED EMPTY DIR: ./android/.gradle/kotlin/sessions
+DELETED EMPTY DIR: ./android/.kotlin/sessions
+DELETED EMPTY DIR: ./assets/fonts
+DELETED EMPTY DIR: ./web/assets/css
+DELETED EMPTY DIR: ./web/assets/js
+
+=== SUMMARY ===
+Duplicate files deleted: 49
+Files skipped (in use): 19
+Empty directories deleted: 0

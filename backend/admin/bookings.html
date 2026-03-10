@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneConnect Admin - Bookings</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        OneConnect
+        <small>Admin Panel</small>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
+        <li><a href="partners.html"><span class="nav-icon">&#9670;</span> Partners</a></li>
+        <li><a href="favourites.html"><span class="nav-icon">&#9829;</span> Favourites</a></li>
+        <li><a href="content.html"><span class="nav-icon">&#9733;</span> Content Approval</a></li>
+        <li><a href="users.html"><span class="nav-icon">&#9678;</span> Users</a></li>
+        <li><a href="reviews.html"><span class="nav-icon">&#10029;</span> Reviews</a></li>
+        <li><a href="properties.html"><span class="nav-icon">&#8962;</span> Properties</a></li>
+        <li><a href="bookings.html" class="active"><span class="nav-icon">&#128197;</span> Bookings</a></li>
+        <li><a href="offices.html"><span class="nav-icon">&#9873;</span> Offices</a></li>
+        <li><a href="notifications.html"><span class="nav-icon">&#9993;</span> Notifications</a></li>
+        <li><a href="#" id="btn-logout" class="nav-logout"><span class="nav-icon">&#8594;</span> Sign Out</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="admin-info">
+          <div id="admin-name">Admin</div>
+          <div id="admin-email" style="font-size:11px; opacity:0.5;"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Booking Analytics</h1>
+        <p>Track booking lifecycle and operational activity</p>
+      </div>
+
+      <div class="filter-bar card" style="margin-bottom: 16px;">
+        <label for="scope-filter">Date Range</label>
+        <select id="scope-filter">
+          <option value="today">Today's Bookings</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
+
+      <div id="booking-stats" class="stats-grid">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Booking List</h2>
+        </div>
+        <div id="booking-list" class="card-body">
+          <div class="loading"><div class="spinner"></div></div>
+        </div>
+        <div id="booking-pagination" class="pagination" style="display:none;"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/bookings.js"></script>
+</body>
+</html>

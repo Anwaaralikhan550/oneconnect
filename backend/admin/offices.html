@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneConnect Admin - Offices</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        OneConnect
+        <small>Admin Panel</small>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
+        <li><a href="partners.html"><span class="nav-icon">&#9670;</span> Partners</a></li>
+        <li><a href="favourites.html"><span class="nav-icon">&#9829;</span> Favourites</a></li>
+        <li><a href="content.html"><span class="nav-icon">&#9733;</span> Content Approval</a></li>
+        <li><a href="users.html"><span class="nav-icon">&#9678;</span> Users</a></li>
+        <li><a href="reviews.html"><span class="nav-icon">&#10029;</span> Reviews</a></li>
+        <li><a href="properties.html"><span class="nav-icon">&#8962;</span> Properties</a></li>
+        <li><a href="bookings.html"><span class="nav-icon">&#128197;</span> Bookings</a></li>
+        <li><a href="offices.html" class="active"><span class="nav-icon">&#9873;</span> Offices</a></li>
+        <li><a href="notifications.html"><span class="nav-icon">&#9993;</span> Notifications</a></li>
+        <li><a href="#" id="btn-logout" class="nav-logout"><span class="nav-icon">&#8594;</span> Sign Out</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="admin-info">
+          <div id="admin-name">Admin</div>
+          <div id="admin-email" style="font-size:11px; opacity:0.5;"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Admin Offices</h1>
+        <p>Manage administration and emergency offices</p>
+      </div>
+
+      <div class="card">
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <input type="text" id="search-offices" class="search-input" placeholder="Search by name...">
+          <select id="filter-type">
+            <option value="">All Types</option>
+            <option value="administration">Administration</option>
+            <option value="emergency">Emergency</option>
+          </select>
+          <button class="btn btn-primary" id="btn-create" style="margin-left:auto; width:auto;">+ Create Office</button>
+        </div>
+
+        <!-- Table -->
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Rating</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="offices-tbody">
+              <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="offices-pagination"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Office Form Modal -->
+  <div class="modal-overlay" id="office-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="office-modal-title">Create Office</h3>
+        <button class="modal-close" data-action="close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form class="modal-form" id="office-form">
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" name="name" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Office Type *</label>
+              <select name="officeType" required>
+                <option value="administration">Administration</option>
+                <option value="emergency">Emergency</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="text" name="phone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <input type="text" name="address">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Rating</label>
+              <input type="number" name="rating" min="0" max="5" step="0.1" value="0">
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select name="isOpen">
+                <option value="true">Open</option>
+                <option value="false">Closed</option>
+              </select>
+            </div>
+          </div>
+          <input type="hidden" name="id" value="">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" data-action="close-modal">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-office" style="width:auto;">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/offices.js"></script>
+</body>
+</html>
+

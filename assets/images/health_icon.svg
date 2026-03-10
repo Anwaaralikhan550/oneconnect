@@ -1,0 +1,5 @@
+<svg width="63" height="73" viewBox="0 0 63 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="6.5" width="50" height="50" rx="25" fill="#FFE5E5"/>
+<path d="M31.5 15C30.6716 15 30 15.6716 30 16.5V23.5H23C22.1716 23.5 21.5 24.1716 21.5 25V27C21.5 27.8284 22.1716 28.5 23 28.5H30V35.5C30 36.3284 30.6716 37 31.5 37H33.5C34.3284 37 35 36.3284 35 35.5V28.5H42C42.8284 28.5 43.5 27.8284 43.5 27V25C43.5 24.1716 42.8284 23.5 42 23.5H35V16.5C35 15.6716 34.3284 15 33.5 15H31.5Z" fill="#FF4C4C"/>
+<text x="31.5" y="70" font-family="Inter" font-size="14" font-weight="700" fill="#383838" text-anchor="middle">Health</text>
+</svg>

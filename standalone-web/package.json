@@ -1,0 +1,40 @@
+{
+  "name": "oneconnect-signin-web",
+  "version": "1.0.0",
+  "description": "OneConnect Member Sign-In page - Web implementation from Figma design",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8000 -c-1",
+    "dev": "npx http-server -p 3000 -c-1 -o",
+    "build": "echo 'Static HTML project - no build required'",
+    "test": "echo 'Run tests using browser DevTools'",
+    "lint": "npx htmlhint index.html && npx csslint assets/css/styles.css"
+  },
+  "keywords": [
+    "oneconnect",
+    "signin",
+    "web",
+    "html",
+    "css",
+    "javascript",
+    "responsive",
+    "mobile-first",
+    "figma"
+  ],
+  "author": "OneConnect Development Team",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "htmlhint": "^1.1.4",
+    "csslint": "^1.0.5"
+  },
+  "browserslist": [
+    "last 2 versions",
+    "> 1%",
+    "not dead"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

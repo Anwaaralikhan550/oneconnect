@@ -1,0 +1,15 @@
+<svg width="82" height="57" viewBox="0 0 82 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Material Store Icon - matching Figma exactly -->
+  <!-- Top bar/roof -->
+  <rect x="11" y="5" width="60" height="8" fill="#4A4A4A"/>
+  <!-- Scalloped awning - 5 arches -->
+  <ellipse cx="17" cy="17" rx="8" ry="6" fill="#4A4A4A"/>
+  <ellipse cx="29" cy="17" rx="8" ry="6" fill="#4A4A4A"/>
+  <ellipse cx="41" cy="17" rx="8" ry="6" fill="#4A4A4A"/>
+  <ellipse cx="53" cy="17" rx="8" ry="6" fill="#4A4A4A"/>
+  <ellipse cx="65" cy="17" rx="8" ry="6" fill="#4A4A4A"/>
+  <!-- Store body -->
+  <rect x="11" y="20" width="60" height="32" fill="#4A4A4A"/>
+  <!-- Door/window opening -->
+  <rect x="28" y="28" width="26" height="24" fill="white"/>
+</svg>

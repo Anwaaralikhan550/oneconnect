@@ -1,0 +1,7 @@
+<svg width="63" height="73" viewBox="0 0 63 73" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="6.5" width="50" height="50" rx="25" fill="#FFF4E0"/>
+<path d="M38 18H35V16C35 15.45 34.55 15 34 15H24C23.45 15 23 15.45 23 16V36C23 36.55 23.45 37 24 37H34C34.55 37 35 36.55 35 36V28H37C38.1 28 39 27.1 39 26V20C39 18.9 38.1 18 37 18H38ZM25 35V17H33V35H25ZM37 26H35V20H37V26Z" fill="#FFB347"/>
+<path d="M27 23H31V25H27V23Z" fill="#FFB347"/>
+<path d="M27 27H31V29H27V27Z" fill="#FFB347"/>
+<text x="31.5" y="70" font-family="Inter" font-size="14" font-weight="700" fill="#383838" text-anchor="middle">Gas</text>
+</svg>

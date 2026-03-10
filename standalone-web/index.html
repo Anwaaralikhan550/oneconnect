@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneConnect - Member Sign-In</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-background"></div>
+            <div class="header-gradient"></div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Title Section -->
+            <section class="title-section">
+                <h1 class="main-title">Pakistan's #1 Community Services Mobile Application</h1>
+                <p class="subtitle">Your go-to app for seamless community services in Pakistan!</p>
+            </section>
+
+            <!-- Sign Up Divider -->
+            <div class="divider-section">
+                <div class="divider-line"></div>
+                <span class="divider-text">Sign up</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- Phone Number Input Section -->
+            <section class="phone-input-section">
+                <div class="phone-input-container">
+                    <div class="country-selector" id="countrySelector">
+                        <img src="assets/images/uk_flag.svg" alt="UK Flag" class="flag-icon" id="flagIcon">
+                        <span class="country-code" id="countryCode">GB</span>
+                        <img src="assets/images/chevron_down.svg" alt="Dropdown" class="chevron-icon">
+                    </div>
+                    <div class="input-divider"></div>
+                    <input type="tel" class="phone-input" id="phoneInput" placeholder="+44 (000) 000-0000">
+                    <button class="help-button" id="helpButton">
+                        <img src="assets/images/question_icon.svg" alt="Help" class="help-icon">
+                    </button>
+                </div>
+            </section>
+
+            <!-- Continue Button -->
+            <section class="button-section">
+                <button class="continue-button" id="continueButton">
+                    <span>Continue</span>
+                    <img src="assets/images/arrow_icon.svg" alt="Arrow" class="arrow-icon">
+                </button>
+            </section>
+
+            <!-- Or Divider -->
+            <div class="or-divider-section">
+                <div class="divider-line"></div>
+                <span class="or-divider-text">or using other method</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- Social Sign-In Icons -->
+            <section class="social-signin-section">
+                <div class="social-buttons">
+                    <button class="social-button google-button" id="googleButton">
+                        <img src="assets/images/google_icon.svg" alt="Google" class="social-icon">
+                    </button>
+                    <button class="social-button apple-button" id="appleButton">
+                        <img src="assets/images/apple_icon.svg" alt="Apple" class="social-icon">
+                    </button>
+                    <button class="social-button email-button" id="emailButton">
+                        <img src="assets/images/email_icon.svg" alt="Email" class="social-icon">
+                    </button>
+                </div>
+            </section>
+
+            <!-- Terms of Service -->
+            <section class="terms-section">
+                <p class="terms-intro">By continuing, you agree to our</p>
+                <div class="terms-links">
+                    <a href="#" class="terms-link">Terms of Service</a>
+                    <span class="terms-separator">•</span>
+                    <a href="#" class="terms-link">Privacy Policy</a>
+                    <span class="terms-separator">•</span>
+                    <a href="#" class="terms-link">Content Policies</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Country Picker Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="country-modal" id="countryModal">
+            <div class="modal-header">
+                <h3>Select Country</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="country-list">
+                <div class="country-option" data-code="GB" data-flag="assets/images/uk_flag.svg" data-name="United Kingdom" data-phone="+44">
+                    <img src="assets/images/uk_flag.svg" alt="UK Flag" class="country-flag">
+                    <div class="country-info">
+                        <span class="country-name">United Kingdom</span>
+                        <span class="country-phone">+44</span>
+                    </div>
+                </div>
+                <div class="country-option" data-code="PK" data-flag="🇵🇰" data-name="Pakistan" data-phone="+92">
+                    <span class="country-flag emoji-flag">🇵🇰</span>
+                    <div class="country-info">
+                        <span class="country-name">Pakistan</span>
+                        <span class="country-phone">+92</span>
+                    </div>
+                </div>
+                <div class="country-option" data-code="US" data-flag="🇺🇸" data-name="United States" data-phone="+1">
+                    <span class="country-flag emoji-flag">🇺🇸</span>
+                    <div class="country-info">
+                        <span class="country-name">United States</span>
+                        <span class="country-phone">+1</span>
+                    </div>
+                </div>
+                <div class="country-option" data-code="IN" data-flag="🇮🇳" data-name="India" data-phone="+91">
+                    <span class="country-flag emoji-flag">🇮🇳</span>
+                    <div class="country-info">
+                        <span class="country-name">India</span>
+                        <span class="country-phone">+91</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="helpModalOverlay">
+        <div class="help-modal" id="helpModal">
+            <div class="modal-header">
+                <h3>Phone Number Help</h3>
+                <button class="modal-close" id="helpModalClose">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p>Enter your mobile number to receive a verification code via SMS.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/script.js"></script>
+</body>
+</html>

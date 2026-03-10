@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneConnect Admin - Content Approval</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        OneConnect
+        <small>Admin Panel</small>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">&#9632;</span> Dashboard</a></li>
+        <li><a href="partners.html"><span class="nav-icon">&#9670;</span> Partners</a></li>
+        <li><a href="favourites.html"><span class="nav-icon">&#9829;</span> Favourites</a></li>
+        <li><a href="content.html" class="active"><span class="nav-icon">&#9733;</span> Content Approval</a></li>
+        <li><a href="users.html"><span class="nav-icon">&#9678;</span> Users</a></li>
+        <li><a href="reviews.html"><span class="nav-icon">&#10029;</span> Reviews</a></li>
+        <li><a href="properties.html"><span class="nav-icon">&#8962;</span> Properties</a></li>
+        <li><a href="bookings.html"><span class="nav-icon">&#128197;</span> Bookings</a></li>
+        <li><a href="offices.html"><span class="nav-icon">&#9873;</span> Offices</a></li>
+        <li><a href="notifications.html"><span class="nav-icon">&#9993;</span> Notifications</a></li>
+        <li><a href="#" id="btn-logout" class="nav-logout"><span class="nav-icon">&#8594;</span> Sign Out</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div class="admin-info">
+          <div id="admin-name">Admin</div>
+          <div id="admin-email" style="font-size:11px; opacity:0.5;"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1>Content Approval</h1>
+        <p>Review and approve partner-submitted services, businesses, amenities, and promotions</p>
+      </div>
+
+      <div class="card">
+        <!-- Content Type Tabs -->
+        <div class="tabs">
+          <button class="tab active" data-type="service-providers">Services</button>
+          <button class="tab" data-type="businesses">Businesses</button>
+          <button class="tab" data-type="amenities">Amenities</button>
+          <button class="tab" data-type="promotions">Promotions</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <select id="filter-status">
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+          <input type="text" id="search-content" class="search-input" placeholder="Search by name...">
+        </div>
+
+        <!-- Table -->
+        <div class="card-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type/Category</th>
+                <th>Partner</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="content-tbody">
+              <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="content-pagination"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Content Detail Modal -->
+  <div class="modal-overlay" id="content-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="content-modal-title">Item Details</h3>
+        <button class="modal-close" data-action="close-content-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="content-modal-body">
+        <div class="loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/content.js"></script>
+</body>
+</html>
+

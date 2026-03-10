@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "74788691186",
+    "project_id": "oneconnect-b7306",
+    "storage_bucket": "oneconnect-b7306.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:74788691186:android:906174f93bcb883494846b",
+        "android_client_info": {
+          "package_name": "com.example.oneconnect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "74788691186-f8lsfessv9ta8vriqvm6mt485k5gpl9c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJbaJ3XcctF6__fG2G_iTEJoYr7iATJ_A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "74788691186-f8lsfessv9ta8vriqvm6mt485k5gpl9c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "74788691186-q4v3ru6s2kkdnpp355trlsmp1e7dsdp6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.oneconnect"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
