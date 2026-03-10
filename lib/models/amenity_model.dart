@@ -1,4 +1,6 @@
 import 'review_model.dart';
+import 'promotion_model.dart';
+import '../utils/media_url.dart';
 
 class AmenityMediaModel {
   final String id;
@@ -19,7 +21,7 @@ class AmenityMediaModel {
     return AmenityMediaModel(
       id: json['id'] ?? '',
       mediaType: json['mediaType'] ?? 'PHOTO',
-      fileUrl: json['fileUrl'] ?? '',
+      fileUrl: resolveMediaUrl(json['fileUrl']?.toString()) ?? '',
       fileName: json['fileName'],
       fileSizeKb: json['fileSizeKb'] as int?,
     );
@@ -51,6 +53,7 @@ class AmenityModel {
   final String? websiteUrl;
   final List<ReviewModel> reviews;
   final List<AmenityMediaModel> media;
+  final List<PromotionModel> promotions;
 
   AmenityModel({
     required this.id,
@@ -77,6 +80,7 @@ class AmenityModel {
     this.websiteUrl,
     this.reviews = const [],
     this.media = const [],
+    this.promotions = const [],
   });
 
   factory AmenityModel.fromJson(Map<String, dynamic> json) {
@@ -85,6 +89,9 @@ class AmenityModel {
         .toList() ?? [];
     final mediaList = (json['media'] as List?)
         ?.map((m) => AmenityMediaModel.fromJson(m as Map<String, dynamic>))
+        .toList() ?? [];
+    final promotionsList = (json['promotions'] as List?)
+        ?.map((p) => PromotionModel.fromJson(p as Map<String, dynamic>))
         .toList() ?? [];
 
     return AmenityModel(
@@ -103,7 +110,7 @@ class AmenityModel {
       operatingDays: (json['operatingDays'] as List?)?.map((d) => d.toString()).toList() ?? [],
       servicesOffered: (json['servicesOffered'] as List?)?.map((s) => s.toString()).toList() ?? [],
       followersCount: json['followersCount'] ?? 0,
-      imageUrl: json['imageUrl'],
+      imageUrl: resolveMediaUrl(json['imageUrl']?.toString()),
       phone: json['phone'],
       description: json['description'],
       facebookUrl: json['facebookUrl'],
@@ -112,6 +119,7 @@ class AmenityModel {
       websiteUrl: json['websiteUrl'],
       reviews: reviewsList,
       media: mediaList,
+      promotions: promotionsList,
     );
   }
 
@@ -145,6 +153,7 @@ class AmenityModel {
       websiteUrl: websiteUrl,
       reviews: reviews ?? this.reviews,
       media: media,
+      promotions: promotions,
     );
   }
 }

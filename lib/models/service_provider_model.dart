@@ -1,4 +1,5 @@
 import 'review_model.dart';
+import '../utils/media_url.dart';
 
 class ServiceProviderModel {
   final String id;
@@ -18,6 +19,10 @@ class ServiceProviderModel {
   final String? openingTime;
   final String? closingTime;
   final String? imageUrl;
+  final int followersCount;
+  final bool isFollowEnabled;
+  final bool isProfessionalProfileEnabled;
+  final bool isFollowing;
   final double? latitude;
   final double? longitude;
   final double? distanceKm;
@@ -56,6 +61,10 @@ class ServiceProviderModel {
     this.openingTime,
     this.closingTime,
     this.imageUrl,
+    this.followersCount = 0,
+    this.isFollowEnabled = false,
+    this.isProfessionalProfileEnabled = false,
+    this.isFollowing = false,
     this.latitude,
     this.longitude,
     this.distanceKm,
@@ -103,7 +112,12 @@ class ServiceProviderModel {
       workingSince: json['workingSince'],
       openingTime: json['openingTime'],
       closingTime: json['closingTime'],
-      imageUrl: json['imageUrl'],
+      imageUrl: resolveMediaUrl(json['imageUrl']?.toString()),
+      followersCount: json['followersCount'] ?? 0,
+      isFollowEnabled: json['isFollowEnabled'] ?? false,
+      isProfessionalProfileEnabled:
+          json['isProfessionalProfileEnabled'] ?? false,
+      isFollowing: json['isFollowing'] ?? false,
       latitude: (json['latitude'] as num?)?.toDouble() ??
           (json['lat'] as num?)?.toDouble() ??
           (json['locationLat'] as num?)?.toDouble(),
@@ -151,6 +165,10 @@ class ServiceProviderModel {
       openingTime: openingTime,
       closingTime: closingTime,
       imageUrl: imageUrl,
+      followersCount: followersCount,
+      isFollowEnabled: isFollowEnabled,
+      isProfessionalProfileEnabled: isProfessionalProfileEnabled,
+      isFollowing: isFollowing,
       latitude: latitude,
       longitude: longitude,
       distanceKm: distanceKm,
@@ -188,7 +206,7 @@ class MediaItem {
   factory MediaItem.fromJson(Map<String, dynamic> json) => MediaItem(
     id: json['id'] ?? '',
     mediaType: json['mediaType'] ?? 'PHOTO',
-    fileUrl: json['fileUrl'] ?? '',
+    fileUrl: resolveMediaUrl(json['fileUrl']?.toString()) ?? '',
     fileName: json['fileName'],
     fileSizeKb: json['fileSizeKb'] as int?,
     createdAt: json['createdAt'] != null

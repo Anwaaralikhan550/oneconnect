@@ -172,7 +172,7 @@ async function suggestions(q) {
   ];
 }
 
-async function popular(query = {}) {
+async function popular(query = {}, userId = null) {
   const filter = normalizeFilterQuery(query);
   const locationText = filter.area;
   const orderBy =
@@ -228,6 +228,9 @@ async function popular(query = {}) {
     rating: true,
     reviewCount: true,
     imageUrl: true,
+    followersCount: true,
+    isFollowEnabled: true,
+    isProfessionalProfileEnabled: true,
     address: true,
     city: true,
     serviceCharge: true,
@@ -245,6 +248,7 @@ async function popular(query = {}) {
         facebookUrl: true,
         instagramUrl: true,
         websiteUrl: true,
+        followUsEnabled: true,
       },
     },
     reviews: {
@@ -262,6 +266,8 @@ async function popular(query = {}) {
     rating: true,
     reviewCount: true,
     imageUrl: true,
+    followersCount: true,
+    isFollowEnabled: true,
     isOpen: true,
     openingTime: true,
     closingTime: true,
@@ -273,6 +279,12 @@ async function popular(query = {}) {
       },
       orderBy: { createdAt: 'desc' },
       take: 5,
+    },
+    partner: {
+      select: {
+        status: true,
+        followUsEnabled: true,
+      },
     },
   };
   const amenitySelect = {
@@ -303,7 +315,8 @@ async function popular(query = {}) {
     topDoctorsRaw,
     topNonDoctorServicesRaw,
     topEateriesRaw,
-    socialPartner,
+    followBusinessesRaw,
+    followServicesRaw,
   ] = await Promise.all([
     prisma.serviceProvider.findMany({
       where: {
@@ -357,22 +370,52 @@ async function popular(query = {}) {
       orderBy,
       take: 10,
     }),
-    prisma.partner.findFirst({
+    prisma.business.findMany({
       where: {
-        status: 'APPROVED',
-        followUsEnabled: true,
-        OR: [
-          { facebookUrl: { not: null } },
-          { instagramUrl: { not: null } },
-          { websiteUrl: { not: null } },
-        ],
+        contentStatus: 'APPROVED',
+        isFollowEnabled: true,
+        partner: {
+          status: 'APPROVED',
+          followUsEnabled: true,
+        },
       },
       select: {
-        facebookUrl: true,
-        instagramUrl: true,
-        websiteUrl: true,
+        id: true,
+        name: true,
+        category: true,
+        imageUrl: true,
+        followersCount: true,
+        isFollowEnabled: true,
+        location: true,
+        partner: { select: { followUsEnabled: true } },
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ followersCount: 'desc' }, { updatedAt: 'desc' }],
+      take: 10,
+    }),
+    prisma.serviceProvider.findMany({
+      where: {
+        contentStatus: 'APPROVED',
+        isFollowEnabled: true,
+        isProfessionalProfileEnabled: true,
+        partner: {
+          status: 'APPROVED',
+          followUsEnabled: true,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        serviceType: true,
+        imageUrl: true,
+        followersCount: true,
+        isFollowEnabled: true,
+        isProfessionalProfileEnabled: true,
+        address: true,
+        city: true,
+        partner: { select: { followUsEnabled: true } },
+      },
+      orderBy: [{ followersCount: 'desc' }, { updatedAt: 'desc' }],
+      take: 10,
     }),
   ]);
 
@@ -507,7 +550,8 @@ async function popular(query = {}) {
           ratingText: review.ratingText || '',
           review: reviewText,
           createdAt: review.createdAt,
-          productImage: item.imageUrl || '',
+          productImage: review.mediaUrl || item.imageUrl || '',
+          mediaType: review.mediaType || 'PHOTO',
           profileImage: review.user?.profilePhotoUrl || '',
           entityType: itemType,
           entityId: item.id,
@@ -520,11 +564,77 @@ async function popular(query = {}) {
   pushReviews(topAmenities, 'amenity');
   latestReviews.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  const socialLinks = {
-    facebook: socialPartner?.facebookUrl ?? null,
-    instagram: socialPartner?.instagramUrl ?? null,
-    youtube: socialPartner?.websiteUrl ?? null,
-  };
+  const followCardSeed = [
+    ...followBusinessesRaw.map((item) => ({
+      id: item.id,
+      entityType: 'business',
+      name: item.name,
+      subtitle: item.category,
+      imageUrl: item.imageUrl,
+      followersCount: item.followersCount ?? 0,
+      isFollowEnabled: item.isFollowEnabled ?? false,
+      isProfessionalProfileEnabled: true,
+      isVerified: true,
+      location: item.location ?? '',
+    })),
+    ...followServicesRaw.map((item) => ({
+      id: item.id,
+      entityType: 'service',
+      name: item.name,
+      subtitle: item.serviceType,
+      imageUrl: item.imageUrl,
+      followersCount: item.followersCount ?? 0,
+      isFollowEnabled: item.isFollowEnabled ?? false,
+      isProfessionalProfileEnabled: item.isProfessionalProfileEnabled ?? false,
+      isVerified: true,
+      location: item.address || item.city || '',
+    })),
+  ]
+    .sort((a, b) => {
+      if (b.followersCount !== a.followersCount) {
+        return b.followersCount - a.followersCount;
+      }
+      return a.name.localeCompare(b.name);
+    })
+    .slice(0, 10);
+
+  const businessIds = followCardSeed
+    .filter((item) => item.entityType === 'business')
+    .map((item) => item.id);
+  const serviceProviderIds = followCardSeed
+    .filter((item) => item.entityType === 'service')
+    .map((item) => item.id);
+
+  const userFollows = userId && (businessIds.length || serviceProviderIds.length)
+    ? await prisma.follow.findMany({
+        where: {
+          userId,
+          OR: [
+            ...(businessIds.length ? [{ businessId: { in: businessIds } }] : []),
+            ...(serviceProviderIds.length
+              ? [{ serviceProviderId: { in: serviceProviderIds } }]
+              : []),
+          ],
+        },
+        select: {
+          businessId: true,
+          serviceProviderId: true,
+        },
+      })
+    : [];
+
+  const followedBusinessIds = new Set(userFollows.map((item) => item.businessId).filter(Boolean));
+  const followedServiceIds = new Set(
+    userFollows.map((item) => item.serviceProviderId).filter(Boolean),
+  );
+
+  const followCards = followCardSeed.map((item) => ({
+    ...item,
+    isFollowing:
+      item.entityType === 'business'
+        ? followedBusinessIds.has(item.id)
+        : followedServiceIds.has(item.id),
+  }));
 
   return {
     topServices,
@@ -534,7 +644,7 @@ async function popular(query = {}) {
     topNonDoctorServices,
     topEateries,
     latestReviews: latestReviews.slice(0, 10),
-    socialLinks,
+    followCards,
   };
 }
 

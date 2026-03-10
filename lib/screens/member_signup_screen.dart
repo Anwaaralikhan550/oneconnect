@@ -45,15 +45,30 @@ class _SignUpMemberScreenState extends State<SignUpMemberScreen> {
   }
 
   void _handleGoogleSignUp() {
-    Navigator.pushNamed(context, '/email-password-signup');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This option is currently disabled'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _handleAppleSignUp() {
-    Navigator.pushNamed(context, '/email-password-signup');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This option is currently disabled'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _handleEmailPasswordSignUp() {
-    Navigator.pushNamed(context, '/email-password-signup');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This option is currently disabled'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _handleContinue() {
@@ -67,8 +82,18 @@ class _SignUpMemberScreenState extends State<SignUpMemberScreen> {
       return;
     }
 
-    // Navigate to email/password signup screen
-    Navigator.pushNamed(context, '/email-password-signup');
+    final normalizedPhone = '+${_selectedCountry.phoneCode}${_phoneController.text.trim()}';
+    _goToEmailPasswordSignup(phone: normalizedPhone);
+  }
+
+  void _goToEmailPasswordSignup({String? phone}) {
+    Navigator.pushNamed(
+      context,
+      '/email-password-signup',
+      arguments: {
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      },
+    );
   }
 
   @override

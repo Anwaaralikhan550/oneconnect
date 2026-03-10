@@ -1,3 +1,5 @@
+import '../utils/media_url.dart';
+
 class UserModel {
   final String id;
   final String name;
@@ -53,7 +55,7 @@ class UserModel {
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       phone: json['phone'],
-      profilePhotoUrl: json['profilePhotoUrl'],
+      profilePhotoUrl: resolveMediaUrl(json['profilePhotoUrl']?.toString()),
       bio: json['bio'],
       address: json['address'],
       country: json['country'],

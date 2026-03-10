@@ -39,9 +39,19 @@ class ApiClient {
 
   Future<Map<String, dynamic>> _handleResponse(http.Response response) async {
     final rawBody = response.body.trim();
-    final body = rawBody.isEmpty
-        ? <String, dynamic>{}
-        : (jsonDecode(rawBody) as Map<String, dynamic>);
+    Map<String, dynamic> body;
+    if (rawBody.isEmpty) {
+      body = <String, dynamic>{};
+    } else {
+      try {
+        final decoded = jsonDecode(rawBody);
+        body = decoded is Map<String, dynamic>
+            ? decoded
+            : <String, dynamic>{'error': rawBody};
+      } catch (_) {
+        body = <String, dynamic>{'error': rawBody};
+      }
+    }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body;
@@ -54,8 +64,11 @@ class ApiClient {
       }
     }
 
+    final fallbackMessage = response.statusCode == 409
+        ? 'Email already registered'
+        : 'Request failed';
     throw ApiException(
-      body['error'] ?? 'Request failed',
+      (body['error'] ?? fallbackMessage).toString(),
       statusCode: response.statusCode,
       data: body,
     );

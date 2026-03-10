@@ -28,32 +28,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   String selectedCountry = 'Select Country';
   File? _profileImage;
   String? _networkProfilePhotoUrl;
+  String? _uploadedProfilePhotoUrl;
+
+  void _hydrateFromAuth(AuthProvider auth) {
+    final user = auth.user;
+    if (user == null) return;
+    final dob = user.dateOfBirth;
+    final dobText = dob != null
+        ? '${dob.month.toString().padLeft(2, '0')}/${dob.day.toString().padLeft(2, '0')}/${dob.year}'
+        : '';
+    setState(() {
+      _usernameController.text = user.name;
+      _fullNameController.text = user.name;
+      _emailController.text = user.email;
+      _phoneController.text = (user.phone != null && user.phone!.isNotEmpty) ? user.phone! : '';
+      _genderController.text = user.gender ?? '';
+      _dateController.text = dobText;
+      _occupationController.text = user.occupation ?? '';
+      _addressController.text = user.address ?? '';
+      if ((user.country ?? '').trim().isNotEmpty) {
+        selectedCountry = user.country!.trim();
+      }
+      _networkProfilePhotoUrl = user.profilePhotoUrl;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final auth = Provider.of<AuthProvider>(context, listen: false);
-      if (auth.user != null) {
-        final dob = auth.user!.dateOfBirth;
-        final dobText = dob != null
-            ? '${dob.month.toString().padLeft(2, '0')}/${dob.day.toString().padLeft(2, '0')}/${dob.year}'
-            : '';
-        setState(() {
-          _usernameController.text = auth.user!.name;
-          _fullNameController.text = auth.user!.name;
-          _emailController.text = auth.user!.email;
-          if (auth.user!.phone != null && auth.user!.phone!.isNotEmpty) {
-            _phoneController.text = auth.user!.phone!;
-          }
-          _genderController.text = auth.user!.gender ?? '';
-          _dateController.text = dobText;
-          _occupationController.text = auth.user!.occupation ?? '';
-          _addressController.text = auth.user!.address ?? '';
-          if ((auth.user!.country ?? '').trim().isNotEmpty) {
-            selectedCountry = auth.user!.country!.trim();
-          }
-          _networkProfilePhotoUrl = auth.user!.profilePhotoUrl;
+      _hydrateFromAuth(auth);
+      if (auth.user == null) {
+        auth.fetchProfile().then((_) {
+          if (!mounted) return;
+          _hydrateFromAuth(auth);
         });
       }
     });
@@ -61,10 +70,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _updateProfileImage() async {
     final File? image = await ProfileImagePicker.showImageSourceDialog(context);
-    if (image != null) {
+    if (image == null) return;
+
+    setState(() {
+      _profileImage = image;
+    });
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final uploadedUrl = await auth.uploadProfilePhoto(image.path);
+    if (!mounted) return;
+
+    if (uploadedUrl != null) {
+      final resolvedUploaded = uploadedUrl.trim();
+      await auth.fetchProfile();
+      if (!mounted) return;
       setState(() {
-        _profileImage = image;
+        _uploadedProfilePhotoUrl = resolvedUploaded;
+        _networkProfilePhotoUrl =
+            Provider.of<AuthProvider>(context, listen: false).user?.profilePhotoUrl ??
+                resolvedUploaded;
+        // Keep local preview visible immediately; network image can sync in background.
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile photo updated')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.error ?? 'Profile photo upload failed')),
+      );
     }
   }
 
@@ -127,7 +160,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     String? uploadedPhotoUrl;
-    if (_profileImage != null) {
+    if ((_uploadedProfilePhotoUrl ?? '').trim().isNotEmpty) {
+      uploadedPhotoUrl = _uploadedProfilePhotoUrl;
+    } else if (_profileImage != null) {
       uploadedPhotoUrl = await auth.uploadProfilePhoto(_profileImage!.path);
       if (uploadedPhotoUrl == null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -155,7 +190,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (uploadedPhotoUrl != null) {
         setState(() {
           _networkProfilePhotoUrl = uploadedPhotoUrl;
-          _profileImage = null;
+          _uploadedProfilePhotoUrl = uploadedPhotoUrl;
         });
       }
       ScaffoldMessenger.of(context).showSnackBar(
@@ -295,7 +330,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         height: 68.55,
                       )
                     : buildProfileImage(
-                        _networkProfilePhotoUrl,
+                        _networkProfilePhotoUrl ??
+                            Provider.of<AuthProvider>(context).user?.profilePhotoUrl,
                         fallbackIcon: Icons.person,
                         iconSize: 35,
                       ),

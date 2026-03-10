@@ -14,6 +14,7 @@ import '../widgets/location_section.dart';
 import '../widgets/facilities_section.dart';
 import '../widgets/member_reviews_section.dart';
 import '../widgets/partner_media_gallery.dart';
+import '../widgets/special_offers_section.dart';
 import '../mixins/responsive_mixin.dart';
 import '../widgets/detail_screen_header.dart';
 
@@ -87,6 +88,8 @@ class _MosqueDetailScreenState extends State<MosqueDetailScreen>
                   ),
                   SizedBox(height: rh(10)),
                   PhotosAndVideosSection(imageUrls: detail?.media.isNotEmpty == true ? detail!.media.map((m) => m.fileUrl).toList() : (detail?.imageUrl?.isNotEmpty == true ? [detail!.imageUrl!] : [])),
+                  SizedBox(height: rh(10)),
+                  SpecialOffersSection(promotions: detail?.promotions ?? const []),
                   SizedBox(height: rh(10)),
                   _buildReviewUsSection(detail),
                   SizedBox(height: rh(10)),
@@ -242,6 +245,7 @@ class _MosqueDetailScreenState extends State<MosqueDetailScreen>
         .voteAmenityReview(amenityId, reviewId, voteType);
   }
 }
+
 
 
 

@@ -215,6 +215,24 @@ async function deleteServiceProviderMedia(req, res, next) {
   }
 }
 
+async function deleteBusinessMedia(req, res, next) {
+  try {
+    await partnerService.deleteBusinessMedia(req.partner.id, req.params.mediaId);
+    res.json({ success: true, data: { message: 'Media deleted' } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteAmenityMedia(req, res, next) {
+  try {
+    await partnerService.deleteAmenityMedia(req.partner.id, req.params.mediaId);
+    res.json({ success: true, data: { message: 'Media deleted' } });
+  } catch (err) {
+    next(err);
+  }
+}
+
 // Properties
 async function getProperties(req, res, next) {
   try {
@@ -327,6 +345,8 @@ module.exports = {
   deleteServiceProvider,
   getServiceProviderMedia,
   deleteServiceProviderMedia,
+  deleteBusinessMedia,
+  deleteAmenityMedia,
   getBusinesses,
   createBusiness,
   updateBusiness,

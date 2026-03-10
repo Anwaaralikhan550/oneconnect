@@ -86,9 +86,26 @@ class PartnerService {
     if (whatsapp.isNotEmpty) payload['whatsapp'] = whatsapp;
     final website = _normalizeUrlOrNull(data['websiteUrl']);
     if (website != null) payload['websiteUrl'] = website;
+    if (data['isFollowEnabled'] is bool) {
+      payload['isFollowEnabled'] = data['isFollowEnabled'];
+    }
     final contentStatus = (data['contentStatus'] ?? '').toString().trim().toUpperCase();
     if (contentStatus == 'PENDING') payload['contentStatus'] = contentStatus;
 
+    return payload;
+  }
+
+  Map<String, dynamic> _sanitizeServiceProviderPayload(
+    Map<String, dynamic> data,
+  ) {
+    final payload = Map<String, dynamic>.from(data);
+    if (data['isFollowEnabled'] is bool) {
+      payload['isFollowEnabled'] = data['isFollowEnabled'];
+    }
+    if (data['isProfessionalProfileEnabled'] is bool) {
+      payload['isProfessionalProfileEnabled'] =
+          data['isProfessionalProfileEnabled'];
+    }
     return payload;
   }
 
@@ -336,6 +353,10 @@ class PartnerService {
     return BusinessMediaModel.fromJson(response['data']);
   }
 
+  Future<void> deleteBusinessMedia(String mediaId) async {
+    await _api.delete('/partner/me/businesses/media/$mediaId', auth: true);
+  }
+
   Future<AmenityMediaModel> uploadAmenityMedia(String amenityId, String filePath, {String mediaType = 'PHOTO'}) async {
     final response = await _api.uploadFile(
       '/upload/amenity-media',
@@ -347,6 +368,10 @@ class PartnerService {
     return AmenityMediaModel.fromJson(response['data']);
   }
 
+  Future<void> deleteAmenityMedia(String mediaId) async {
+    await _api.delete('/partner/me/amenities/media/$mediaId', auth: true);
+  }
+
   // Service Providers
   Future<List<ServiceProviderModel>> getServiceProviders() async {
     final response = await _api.get('/partner/me/service-providers', auth: true);
@@ -355,12 +380,20 @@ class PartnerService {
   }
 
   Future<ServiceProviderModel> createServiceProvider(Map<String, dynamic> data) async {
-    final response = await _api.post('/partner/me/service-providers', body: data, auth: true);
+    final response = await _api.post(
+      '/partner/me/service-providers',
+      body: _sanitizeServiceProviderPayload(data),
+      auth: true,
+    );
     return ServiceProviderModel.fromJson(response['data']);
   }
 
   Future<ServiceProviderModel> updateServiceProvider(String id, Map<String, dynamic> data) async {
-    final response = await _api.put('/partner/me/service-providers/$id', body: data, auth: true);
+    final response = await _api.put(
+      '/partner/me/service-providers/$id',
+      body: _sanitizeServiceProviderPayload(data),
+      auth: true,
+    );
     return ServiceProviderModel.fromJson(response['data']);
   }
 

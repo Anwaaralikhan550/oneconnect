@@ -50,6 +50,8 @@ router.put('/me/service-providers/:id', partnerAuthGuard, validate(serviceProvid
 router.delete('/me/service-providers/:id', partnerAuthGuard, partnerController.deleteServiceProvider);
 router.get('/me/service-providers/:id/media', partnerAuthGuard, validate(idParamSchema, 'params'), partnerController.getServiceProviderMedia);
 router.delete('/me/service-providers/media/:mediaId', partnerAuthGuard, partnerController.deleteServiceProviderMedia);
+router.delete('/me/businesses/media/:mediaId', partnerAuthGuard, partnerController.deleteBusinessMedia);
+router.delete('/me/amenities/media/:mediaId', partnerAuthGuard, partnerController.deleteAmenityMedia);
 
 // Businesses
 router.get('/me/businesses', partnerAuthGuard, partnerController.getBusinesses);

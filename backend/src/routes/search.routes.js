@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const searchController = require('../controllers/search.controller');
 const { validate } = require('../middleware/validate');
-const { authGuard } = require('../middleware/auth');
+const { authGuard, optionalAuth } = require('../middleware/auth');
 const {
   searchQuerySchema,
   searchPopularQuerySchema,
@@ -14,7 +14,7 @@ const router = Router();
 // Public
 router.get('/', validate(searchQuerySchema, 'query'), searchController.search);
 router.get('/suggestions', validate(searchSuggestionSchema, 'query'), searchController.suggestions);
-router.get('/popular', validate(searchPopularQuerySchema, 'query'), searchController.popular);
+router.get('/popular', optionalAuth, validate(searchPopularQuerySchema, 'query'), searchController.popular);
 
 // Authenticated
 router.get('/history', authGuard, searchController.getSearchHistory);

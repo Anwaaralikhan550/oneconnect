@@ -1,0 +1,3 @@
+ALTER TABLE "reviews"
+ADD COLUMN IF NOT EXISTS "mediaUrl" TEXT,
+ADD COLUMN IF NOT EXISTS "mediaType" "MediaType";

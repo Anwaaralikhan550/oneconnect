@@ -18,6 +18,40 @@ class SideMenu extends StatefulWidget {
 }
 
 class _SideMenuState extends State<SideMenu> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _submitSearch() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+
+    widget.onClose();
+
+    final lowerQuery = query.toLowerCase();
+    if (lowerQuery == 'property' ||
+        lowerQuery.contains('property') ||
+        lowerQuery == 'real estate' ||
+        lowerQuery.contains('real estate')) {
+      Navigator.pushNamed(context, '/property');
+    } else if (lowerQuery == 'electrician' ||
+        lowerQuery.contains('electrician')) {
+      Navigator.pushNamed(context, '/electricians');
+    } else {
+      Navigator.pushNamed(
+        context,
+        '/search-results',
+        arguments: {
+          'query': query,
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get screen size for responsive design
@@ -136,6 +170,9 @@ class _SideMenuState extends State<SideMenu> {
                                 SizedBox(width: 12 * scale),
                                 Expanded(
                                   child: TextField(
+                                    controller: _searchController,
+                                    textInputAction: TextInputAction.search,
+                                    onSubmitted: (_) => _submitSearch(),
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 15 * scale,

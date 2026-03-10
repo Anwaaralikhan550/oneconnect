@@ -33,6 +33,7 @@ import 'screens/edit_profile_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/push_notification_settings_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/favorites_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/search_results_screen.dart';
 import 'screens/location_permission_screen.dart';
@@ -116,7 +117,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AuthProvider()..checkAuthState()),
         ChangeNotifierProvider(create: (_) => ServiceProviderProvider()),
         ChangeNotifierProvider(create: (_) => BusinessProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
@@ -494,6 +495,10 @@ class OneConnectApp extends StatelessWidget {
       '/push-notification-settings': (context) => const AuthRouteGate(
             requirePartner: false,
             child: PushNotificationSettingsScreen(),
+          ),
+      '/your-favorites': (context) => const AuthRouteGate(
+            requirePartner: false,
+            child: FavoritesScreen(),
           ),
       '/search': (context) => const SearchScreen(),
       // '/location-permission' handled in _handleUnknownRoute for transparent route

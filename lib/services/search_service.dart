@@ -31,6 +31,7 @@ class SearchService {
     final response = await _api.get(
       '/search/popular',
       queryParams: filter?.toQueryParams(),
+      auth: true,
     );
     return response['data'] as Map<String, dynamic>;
   }

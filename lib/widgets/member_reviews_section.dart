@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../models/review_model.dart';
 import 'partner_media_gallery.dart';
+import '../screens/review_media_center_screen.dart';
+import '../utils/media_url.dart';
 
 /// Shared member reviews section for detail screens.
 ///
@@ -117,6 +119,29 @@ class _MemberReviewsSectionState extends State<MemberReviewsSection> {
             items: widget.mediaItems,
             hideWhenEmpty: true,
           ),
+          if ((widget.reviews.isNotEmpty || widget.mediaItems.isNotEmpty))
+            Padding(
+              padding: EdgeInsets.only(top: rh(6), left: rw(20), right: rw(20)),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ReviewMediaCenterScreen(
+                          title: widget.sectionTitle,
+                          reviews: widget.reviews,
+                          mediaItems: widget.mediaItems,
+                          initialTabIndex: 0,
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Text('See all reviews & media'),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -168,19 +193,7 @@ class _LiveReviewCard extends StatelessWidget {
               // Review image placeholder
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  width: rw(56),
-                  height: rw(56),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    fallbackIcon,
-                    size: rw(30),
-                    color: Colors.grey[600],
-                  ),
-                ),
+                child: _reviewMediaThumb(rw),
               ),
               SizedBox(width: rw(9)),
               // User info
@@ -263,6 +276,10 @@ class _LiveReviewCard extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
+          if (_resolvedReviewMediaUrls().isNotEmpty) ...[
+            SizedBox(height: rh(10)),
+            _reviewMediaThumbStrip(context, rw),
+          ],
           SizedBox(height: rh(10)),
           // Footer row
           Row(
@@ -364,6 +381,139 @@ class _LiveReviewCard extends StatelessWidget {
         color: Colors.grey,
       ),
       child: Icon(Icons.person, size: rw(24), color: Colors.white),
+    );
+  }
+
+  Widget _reviewMediaThumb(double Function(double) rw) {
+    // Keep header thumb as a stable category icon/avatar and
+    // render uploaded review media only in the thumbnail strip below.
+    return Container(
+      width: rw(56),
+      height: rw(56),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(
+        fallbackIcon,
+        size: rw(30),
+        color: Colors.grey[600],
+      ),
+    );
+  }
+
+  List<String> _resolvedReviewMediaUrls() {
+    final urls = <String>[];
+    for (final raw in review.mediaUrls) {
+      final resolved = resolveMediaUrl(raw);
+      if (resolved != null && resolved.isNotEmpty && !urls.contains(resolved)) {
+        urls.add(resolved);
+      }
+    }
+    // Avoid duplicate thumbnail when backend sends both mediaUrls and mediaUrl for same file.
+    if (urls.isEmpty) {
+      final single = resolveMediaUrl(review.mediaUrl);
+      if (single != null && single.isNotEmpty) {
+        urls.add(single);
+      }
+    }
+    return urls;
+  }
+
+  Widget _reviewMediaThumbStrip(
+    BuildContext context,
+    double Function(double) rw,
+  ) {
+    final mediaUrls = _resolvedReviewMediaUrls();
+    if (mediaUrls.isEmpty) return const SizedBox.shrink();
+
+    return InkWell(
+      onTap: () async {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ReviewMediaCenterScreen(
+              title: 'Review Media',
+              reviews: [review],
+              mediaItems: mediaUrls
+                  .asMap()
+                  .entries
+                  .map((entry) {
+                    final url = entry.value;
+                    final inferredType = url.toLowerCase().endsWith('.mp4')
+                        ? 'VIDEO'
+                        : (review.mediaType ?? 'PHOTO');
+                    return PartnerGalleryItem(
+                      id: '${review.id}_${entry.key}',
+                      mediaType: inferredType,
+                      fileUrl: url,
+                    );
+                  })
+                  .toList(),
+              initialTabIndex: 1,
+            ),
+          ),
+        );
+      },
+      child: SizedBox(
+        height: rw(62),
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: mediaUrls.length > 4 ? 4 : mediaUrls.length,
+          separatorBuilder: (_, __) => SizedBox(width: rw(8)),
+          itemBuilder: (_, index) {
+            final mediaUrl = mediaUrls[index];
+            final isVideo = mediaUrl.toLowerCase().endsWith('.mp4');
+            final isLastWithMore = index == 3 && mediaUrls.length > 4;
+            final remaining = mediaUrls.length - 3;
+
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Stack(
+                children: [
+                  Image.network(
+                    mediaUrl,
+                    width: rw(62),
+                    height: rw(62),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      width: rw(62),
+                      height: rw(62),
+                      color: const Color(0xFFE9EBEF),
+                      child: const Icon(Icons.image_not_supported_outlined, size: 16),
+                    ),
+                  ),
+                  if (isVideo)
+                    Positioned.fill(
+                      child: Center(
+                        child: Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.white,
+                          size: rw(18),
+                        ),
+                      ),
+                    ),
+                  if (isLastWithMore)
+                    Positioned.fill(
+                      child: Container(
+                        color: Colors.black.withOpacity(0.45),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '+$remaining',
+                          style: GoogleFonts.inter(
+                            fontSize: rw(12),
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

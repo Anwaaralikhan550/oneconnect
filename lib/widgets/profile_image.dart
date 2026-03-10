@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/media_url.dart';
 
 /// Shared image widget that handles network URLs, local assets, and fallbacks.
 /// Used across all list screens to display provider/business/amenity images.
@@ -12,18 +13,19 @@ Widget buildProfileImage(
     child: Icon(fallbackIcon, size: iconSize, color: Colors.grey),
   );
 
-  if (imageUrl == null || imageUrl.isEmpty) return fallback;
+  final resolved = resolveMediaUrl(imageUrl);
+  if (resolved == null || resolved.isEmpty) return fallback;
 
-  if (imageUrl.startsWith('http')) {
+  if (resolved.startsWith('http')) {
     return Image.network(
-      imageUrl,
+      resolved,
       fit: BoxFit.cover,
       errorBuilder: (_, __, ___) => fallback,
     );
   }
 
   return Image.asset(
-    imageUrl,
+    resolved,
     fit: BoxFit.cover,
     errorBuilder: (_, __, ___) => fallback,
   );

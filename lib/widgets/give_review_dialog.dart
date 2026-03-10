@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../providers/review_provider.dart';
 
 /// A Figma-accurate "Give A Review" dialog that can be used across all list screens.
 ///
@@ -160,6 +162,12 @@ class _GiveReviewDialogState extends State<GiveReviewDialog> {
     setState(() => _isSubmitting = true);
 
     try {
+      if (_selectedImagePath != null && _selectedImagePath!.trim().isNotEmpty) {
+        await Provider.of<ReviewProvider>(context, listen: false)
+            .setPendingMediaFromFile(_selectedImagePath!, mediaType: 'PHOTO');
+      } else {
+        Provider.of<ReviewProvider>(context, listen: false).clearPendingMedia();
+      }
       await widget.onSubmit?.call(
         _selectedRating,
         _reviewController.text,
@@ -167,6 +175,7 @@ class _GiveReviewDialogState extends State<GiveReviewDialog> {
         false,
       );
     } catch (e) {
+      Provider.of<ReviewProvider>(context, listen: false).clearPendingMedia();
       debugPrint('GiveReviewDialog._handleSubmit: $e');
     }
 

@@ -357,87 +357,115 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
   }
 
   Widget _buildEmptyState() {
-    return Column(
-      children: [
-        SizedBox(height: _rs(context, 30)),
-        // Mailbox icon
-        Image.asset(
-          'assets/icons/Mailbox Icon.png',
-          width: _rs(context, 106),
-          height: _rs(context, 106),
-          fit: BoxFit.contain,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        _rs(context, 14),
+        _rs(context, 12),
+        _rs(context, 14),
+        _rs(context, 18),
+      ),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(
+          _rs(context, 22),
+          _rs(context, 26),
+          _rs(context, 22),
+          _rs(context, 22),
         ),
-        SizedBox(height: _rs(context, 17)),
-        // Title
-        Text(
-          'No notifications yet',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w700,
-            fontSize: _rs(context, 30),
-            height: 1.21,
-            color: const Color(0xFF000000),
-          ),
-          textAlign: TextAlign.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFEDEDED),
+          borderRadius: BorderRadius.circular(_rs(context, 28)),
         ),
-        SizedBox(height: _rs(context, 17)),
-        // Description
-        SizedBox(
-          width: _rs(context, 286),
-          child: Text(
-            'Your notification will appear here once you\'ve received them.',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w500,
-              fontSize: _rs(context, 13),
-              height: 1.21,
-              color: const Color(0xFF000000),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        SizedBox(height: _rs(context, 17)),
-        // Missing notifications question
-        SizedBox(
-          width: _rs(context, 286),
-          child: Text(
-            'Missing notifications?',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontWeight: FontWeight.w500,
-              fontSize: _rs(context, 13),
-              height: 1.21,
-              color: const Color(0xFF000000),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        SizedBox(height: _rs(context, 17)),
-        // Settings link
-        GestureDetector(
-          onTap: () {
-            Navigator.pushNamed(context, '/push-notification-settings');
-          },
-          child: SizedBox(
-            width: _rs(context, 286),
-            child: Text(
-              'Go to notification  settings',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Get notified on latest news,\noffers and promotions!',
               style: TextStyle(
                 fontFamily: 'Inter',
-                fontWeight: FontWeight.w500,
-                fontSize: _rs(context, 13),
-                height: 1.21,
-                color: const Color(0xFF0097B2),
+                fontWeight: FontWeight.w700,
+                fontSize: _rs(context, 22),
+                height: 1.2,
+                color: const Color(0xFF000000),
               ),
-              textAlign: TextAlign.center,
             ),
-          ),
+            SizedBox(height: _rs(context, 16)),
+            Text(
+              'Allow push notifications to get real-time\nupdates.',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
+                fontSize: _rs(context, 16),
+                height: 1.25,
+                color: const Color(0xFF222222),
+              ),
+            ),
+            SizedBox(height: _rs(context, 22)),
+            Expanded(
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/images/notification_design_1.svg',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            SizedBox(height: _rs(context, 18)),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      height: _rs(context, 58),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCDCDC),
+                        borderRadius: BorderRadius.circular(_rs(context, 14)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Don\'t Allow',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            fontSize: _rs(context, 18),
+                            color: const Color(0xFF4A4A4A),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: _rs(context, 16)),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/push-notification-settings');
+                    },
+                    child: Container(
+                      height: _rs(context, 58),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3499AF),
+                        borderRadius: BorderRadius.circular(_rs(context, 14)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Allow',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                            fontSize: _rs(context, 18),
+                            color: const Color(0xFFFFFFFF),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        const Spacer(),
-        // Action buttons
-        _buildActionButtons(),
-        SizedBox(height: _rs(context, 30)),
-      ],
+      ),
     );
   }
 

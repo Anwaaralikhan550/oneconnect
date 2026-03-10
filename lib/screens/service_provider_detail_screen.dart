@@ -21,6 +21,7 @@ import '../widgets/profile_image.dart';
 import '../widgets/location_section.dart';
 import '../mixins/responsive_mixin.dart';
 import '../utils/map_utils.dart';
+import '../utils/media_url.dart';
 
 class ServiceProviderDetailScreen extends StatefulWidget {
   final String? providerName;
@@ -1027,6 +1028,8 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                                       profileImage: _serviceTypeIconAsset(
                                         detail.serviceType ?? widget.serviceType,
                                       ),
+                                      reviewMediaUrl: review.mediaUrl,
+                                      reviewMediaType: review.mediaType,
                                       onlineStatusImage: review.userPhotoUrl,
                                       userName: review.userName,
                                       serviceType: _displayServiceType(detail),
@@ -1549,6 +1552,8 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
   Widget _buildFigmaReviewCard({
     ReviewModel? review,
     required String profileImage,
+    String? reviewMediaUrl,
+    String? reviewMediaType,
     String? onlineStatusImage,
     required String userName,
     required String serviceType,
@@ -1588,21 +1593,14 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(rw(8)),
-                  child: profileImage.toLowerCase().endsWith('.svg')
-                      ? Container(
-                          color: Colors.white,
-                          padding: EdgeInsets.all(rw(10)),
-                          child: SvgPicture.asset(
-                            profileImage,
-                            fit: BoxFit.contain,
-                            colorFilter: const ColorFilter.mode(
-                              Color(0xFF515151),
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                        )
-                      : Image.asset(
-                          profileImage,
+                  child: Builder(
+                    builder: (_) {
+                      final resolvedReviewMedia = resolveMediaUrl(reviewMediaUrl);
+                      final isVideo = (reviewMediaType ?? '').toUpperCase() == 'VIDEO' ||
+                          (resolvedReviewMedia?.toLowerCase().endsWith('.mp4') ?? false);
+                      if (resolvedReviewMedia != null && resolvedReviewMedia.isNotEmpty && !isVideo) {
+                        return Image.network(
+                          resolvedReviewMedia,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
@@ -1610,10 +1608,39 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                                 color: Colors.grey[300],
                                 borderRadius: BorderRadius.circular(rw(8)),
                               ),
-                              child: Icon(Icons.fastfood, color: Colors.grey[500], size: rw(24)),
+                              child: Icon(Icons.image_not_supported_outlined, color: Colors.grey[600], size: rw(22)),
                             );
                           },
-                        ),
+                        );
+                      }
+                      return profileImage.toLowerCase().endsWith('.svg')
+                          ? Container(
+                              color: Colors.white,
+                              padding: EdgeInsets.all(rw(10)),
+                              child: SvgPicture.asset(
+                                profileImage,
+                                fit: BoxFit.contain,
+                                colorFilter: const ColorFilter.mode(
+                                  Color(0xFF515151),
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              profileImage,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300],
+                                    borderRadius: BorderRadius.circular(rw(8)),
+                                  ),
+                                  child: Icon(Icons.fastfood, color: Colors.grey[500], size: rw(24)),
+                                );
+                              },
+                            );
+                    },
+                  ),
                 ),
               ),
               

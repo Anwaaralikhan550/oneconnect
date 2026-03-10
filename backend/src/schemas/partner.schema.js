@@ -62,6 +62,7 @@ const partnerUpdateSchema = Joi.object({
   isBusinessOpen: Joi.boolean(),
   description: Joi.string().max(2000).allow('', null),
   followUsEnabled: Joi.boolean(),
+  isFollowEnabled: Joi.boolean(),
   facebookUrl: Joi.string().uri().max(500).allow('', null),
   instagramUrl: Joi.string().uri().max(500).allow('', null),
   whatsapp: Joi.string().max(50).allow('', null),

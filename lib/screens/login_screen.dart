@@ -370,16 +370,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleGoogleLogin() {
-    _handleEmailLogin();
+    _showSnackBar('This option is currently disabled', Colors.orange);
   }
 
   void _handleAppleLogin() {
-    _handleEmailLogin();
-  }
-
-  void _handleEmailLogin() {
-    // Navigate to email signup screen
-    Navigator.pushNamed(context, '/email-password-signup');
+    _showSnackBar('This option is currently disabled', Colors.orange);
   }
 
   @override
@@ -648,18 +643,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 29 * responsiveScale,
                       height: 29 * responsiveScale,
                       colorFilter: ColorFilter.mode(Colors.black, BlendMode.srcIn),
-                    ),
-                  ),
-                  SizedBox(width: 40 * responsiveScale),
-                  // Email Login Button
-                  _buildSocialButton(
-                    onTap: _handleEmailLogin,
-                    responsiveScale: responsiveScale,
-                    child: SvgPicture.asset(
-                      'assets/images/email_icon.svg',
-                      width: 27 * responsiveScale,
-                      height: 27 * responsiveScale,
-                      colorFilter: ColorFilter.mode(Color(0xFF0097B2), BlendMode.srcIn),
                     ),
                   ),
                 ],

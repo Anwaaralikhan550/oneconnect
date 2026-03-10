@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 import '../providers/business_provider.dart';
 import '../providers/favorite_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/search_provider.dart';
 import '../models/filter_dto.dart';
 import '../utils/map_utils.dart';
 import '../widgets/sticky_footer.dart';
@@ -29,6 +31,8 @@ class _BusinessesAndAmenitiesHubScreenState
   String _selectedLocationFilter = 'Area';
   String _selectedCategoryFilter = 'Service';
   String _selectedPriceFilter = 'Rs';
+  Timer? _suggestionDebounce;
+  bool _showSuggestions = false;
 
   late AnimationController _businessesAnimController;
   late AnimationController _amenitiesAnimController;
@@ -115,16 +119,64 @@ class _BusinessesAndAmenitiesHubScreenState
 
   @override
   void dispose() {
+    _suggestionDebounce?.cancel();
     _searchController.dispose();
     _businessesAnimController.dispose();
     _amenitiesAnimController.dispose();
     super.dispose();
   }
 
+  void _onSearchChanged(String value) {
+    final query = value.trim();
+    _suggestionDebounce?.cancel();
+
+    if (query.isEmpty) {
+      setState(() => _showSuggestions = false);
+      Provider.of<SearchProvider>(context, listen: false).fetchSuggestions('');
+      return;
+    }
+
+    _suggestionDebounce = Timer(const Duration(milliseconds: 300), () async {
+      if (!mounted) return;
+      await Provider.of<SearchProvider>(context, listen: false)
+          .fetchSuggestions(query);
+      if (mounted) setState(() => _showSuggestions = true);
+    });
+  }
+
+  void _onSuggestionTap(String suggestion) {
+    _searchController.text = suggestion;
+    _suggestionDebounce?.cancel();
+    setState(() => _showSuggestions = false);
+    _submitSearch();
+  }
+
   void _submitSearch() {
     final query = _searchController.text.trim();
     if (query.isEmpty) return;
-    Navigator.pushNamed(context, '/search-results', arguments: query);
+    FocusScope.of(context).unfocus();
+
+    final lowerQuery = query.toLowerCase();
+    if (lowerQuery == 'property' ||
+        lowerQuery.contains('property') ||
+        lowerQuery == 'real estate' ||
+        lowerQuery.contains('real estate')) {
+      Navigator.pushNamed(context, '/property');
+      return;
+    }
+    if (lowerQuery == 'electrician' || lowerQuery.contains('electrician')) {
+      Navigator.pushNamed(context, '/electricians');
+      return;
+    }
+
+    Navigator.pushNamed(
+      context,
+      '/search-results',
+      arguments: {
+        'query': query,
+        'filter': _activeFilterDto.toQueryParams(),
+      },
+    );
   }
 
   Future<void> _openFilterSheet() async {
@@ -354,103 +406,152 @@ class _BusinessesAndAmenitiesHubScreenState
         rw(42),
         0,
       ),
-      child: Container(
-        height: rh(38),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(100),
-          border: Border.all(
-            color: const Color(0xFFEBEBEB),
-            width: 2,
+      child: Column(
+        children: [
+          Container(
+            height: rh(38),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(
+                color: const Color(0xFFEBEBEB),
+                width: 2,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Search glass icon - 19x19 based on Figma
+                Padding(
+                  padding: EdgeInsets.only(left: rw(15)),
+                  child: SvgPicture.asset(
+                    'assets/images/search_glass_hub.svg',
+                    width: rw(19),
+                    height: rw(19),
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF4A4A4A),
+                      BlendMode.srcIn,
+                    ),
+                    placeholderBuilder: (context) => Icon(
+                      Icons.search,
+                      color: const Color(0xFF4A4A4A),
+                      size: rw(19),
+                    ),
+                  ),
+                ),
+
+                // Search text field
+                Expanded(
+                  child: Center(
+                    child: TextField(
+                      controller: _searchController,
+                      textInputAction: TextInputAction.search,
+                      onChanged: _onSearchChanged,
+                      onSubmitted: (_) => _submitSearch(),
+                      textAlignVertical: TextAlignVertical.center,
+                      style: TextStyle(
+                        fontSize: rfs(14),
+                        color: const Color(0xFF4A4A4A),
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '',
+                        hintStyle: TextStyle(
+                          color: const Color(0xFF999999),
+                          fontSize: rfs(14),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        isDense: true,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: rw(8),
+                          vertical: 0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Vertical line separator - 1x21
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: rw(5)),
+                  child: SvgPicture.asset(
+                    'assets/images/vertical_line_hub.svg',
+                    width: rw(1),
+                    height: rh(21),
+                    placeholderBuilder: (context) => Container(
+                      width: 1,
+                      height: rh(21),
+                      color: const Color(0xFFE0E0E0),
+                    ),
+                  ),
+                ),
+
+                // Filter icon - 25x25
+                Padding(
+                  padding: EdgeInsets.only(right: rw(10)),
+                  child: GestureDetector(
+                    onTap: _openFilterSheet,
+                    child: SvgPicture.asset(
+                      'assets/images/filter_icon_hub.svg',
+                      width: rw(25),
+                      height: rw(25),
+                      placeholderBuilder: (context) => Icon(
+                        Icons.tune,
+                        color: const Color(0xFF4A4A4A),
+                        size: rw(20),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Search glass icon - 19x19 based on Figma
-            Padding(
-              padding: EdgeInsets.only(left: rw(15)),
-              child: SvgPicture.asset(
-                'assets/images/search_glass_hub.svg',
-                width: rw(19),
-                height: rw(19),
-                colorFilter: const ColorFilter.mode(
-                  Color(0xFF4A4A4A),
-                  BlendMode.srcIn,
-                ),
-                placeholderBuilder: (context) => Icon(
-                  Icons.search,
-                  color: const Color(0xFF4A4A4A),
-                  size: rw(19),
-                ),
-              ),
-            ),
-
-            // Search text field
-            Expanded(
-              child: Center(
-                child: TextField(
-                  controller: _searchController,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => _submitSearch(),
-                  textAlignVertical: TextAlignVertical.center,
-                  style: TextStyle(
-                    fontSize: rfs(14),
-                    color: const Color(0xFF4A4A4A),
+          if (_showSuggestions)
+            Consumer<SearchProvider>(
+              builder: (context, searchProvider, _) {
+                final suggestions = searchProvider.suggestions.take(5).toList();
+                if (suggestions.isEmpty) return const SizedBox.shrink();
+                return Container(
+                  width: double.infinity,
+                  margin: EdgeInsets.only(top: rh(6)),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE8E8E8)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  decoration: InputDecoration(
-                    hintText: '',
-                    hintStyle: TextStyle(
-                      color: const Color(0xFF999999),
-                      fontSize: rfs(14),
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: rw(8),
-                      vertical: 0,
-                    ),
+                  child: Column(
+                    children: suggestions.map((s) {
+                      return ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.search, size: 18, color: Color(0xFF4A4A4A)),
+                        title: Text(
+                          s.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: rfs(13), color: const Color(0xFF222222)),
+                        ),
+                        subtitle: Text(
+                          s.type,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: rfs(11), color: const Color(0xFF8A8A8A)),
+                        ),
+                        onTap: () => _onSuggestionTap(s.name),
+                      );
+                    }).toList(),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-
-            // Vertical line separator - 1x21
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: rw(5)),
-              child: SvgPicture.asset(
-                'assets/images/vertical_line_hub.svg',
-                width: rw(1),
-                height: rh(21),
-                placeholderBuilder: (context) => Container(
-                  width: 1,
-                  height: rh(21),
-                  color: const Color(0xFFE0E0E0),
-                ),
-              ),
-            ),
-
-            // Filter icon - 25x25
-            Padding(
-              padding: EdgeInsets.only(right: rw(10)),
-              child: GestureDetector(
-                onTap: _openFilterSheet,
-                child: SvgPicture.asset(
-                  'assets/images/filter_icon_hub.svg',
-                  width: rw(25),
-                  height: rw(25),
-                  placeholderBuilder: (context) => Icon(
-                    Icons.tune,
-                    color: const Color(0xFF4A4A4A),
-                    size: rw(20),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

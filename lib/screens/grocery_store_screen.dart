@@ -5,10 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/business_provider.dart';
+import '../providers/review_provider.dart';
 import '../models/business_model.dart';
 import '../models/promotion_model.dart';
 import '../utils/contact_utils.dart';
 import '../widgets/give_review_dialog.dart';
+import '../widgets/member_reviews_section.dart';
+import '../widgets/partner_media_gallery.dart';
 import '../widgets/photos_and_videos_section.dart';
 import '../widgets/profile_image.dart';
 import '../mixins/responsive_mixin.dart';
@@ -166,11 +169,26 @@ class _GroceryStoreScreenState extends State<GroceryStoreScreen>
 
             // Photos and Videos Section
             PhotosAndVideosSection(
-              imageUrls: _detail?.media.map((m) => m.fileUrl).toList() ?? const [],
+              imageUrls: _detail?.media.isNotEmpty == true
+                  ? _detail!.media.map((m) => m.fileUrl).toList()
+                  : ((_detail?.imageUrl?.isNotEmpty ?? false) ? [_detail!.imageUrl!] : const []),
+            ),
+            SizedBox(height: rh(12)),
+            MemberReviewsSection(
+              reviews: _detail?.reviews ?? const [],
+              fallbackIcon: Icons.store,
+              onVote: (reviewId, voteType) => _handleVote(reviewId, voteType),
+              mediaItems: (_detail?.media ?? const [])
+                  .map(
+                    (m) => PartnerGalleryItem(
+                      id: m.id,
+                      mediaType: m.mediaType,
+                      fileUrl: m.fileUrl,
+                    ),
+                  )
+                  .toList(),
             ),
             SizedBox(height: MediaQuery.of(context).padding.bottom + rw(20)),
-
-            // Customer Reviews Section
           ],
         ),
       ),
@@ -884,11 +902,58 @@ class _GroceryStoreScreenState extends State<GroceryStoreScreen>
                 reviewCount: _parseInt(_storeData?['reviewCount'] ?? _storeData?['reviews']) ?? 10,
                 itemImage: _storeData?['logo'] ?? _storeData?['image'],
                 itemTypeHint: 'STORE',
-                onSubmit: (rating, review, hasPhoto, hasVideo) {
-                  // Handle review submission
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Review submitted successfully!')),
+                onSubmit: (rating, review, hasPhoto, hasVideo) async {
+                  final businessId = _storeData?['id']?.toString();
+                  if (businessId == null || businessId.isEmpty) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Cannot submit review: missing business ID'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                    return;
+                  }
+
+                  final reviewProvider =
+                      Provider.of<ReviewProvider>(context, listen: false);
+                  final ratingText = rating >= 4
+                      ? 'Excellent'
+                      : rating >= 3
+                          ? 'Good'
+                          : rating >= 2
+                              ? 'Average'
+                              : 'Poor';
+                  final success = await reviewProvider.submitBusinessReview(
+                    businessId,
+                    rating: rating.toDouble(),
+                    ratingText: ratingText,
+                    reviewText: review.isNotEmpty ? review : null,
                   );
+
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? 'Review submitted!'
+                            : (reviewProvider.error ?? 'Failed to submit review'),
+                      ),
+                      backgroundColor: success ? Colors.green : Colors.red,
+                    ),
+                  );
+
+                  if (success) {
+                    final submitted = reviewProvider.lastSubmittedReview;
+                    if (submitted != null) {
+                      Provider.of<BusinessProvider>(context, listen: false)
+                          .applySubmittedBusinessReview(businessId, submitted);
+                    } else {
+                      await Provider.of<BusinessProvider>(context, listen: false)
+                          .refreshBusinessDetail(businessId);
+                    }
+                  }
                 },
               );
             },
@@ -1108,6 +1173,13 @@ class _GroceryStoreScreenState extends State<GroceryStoreScreen>
         ],
       ),
     );
+  }
+
+  void _handleVote(String reviewId, String voteType) {
+    final businessId = _storeData?['id']?.toString();
+    if (businessId == null || businessId.isEmpty) return;
+    Provider.of<BusinessProvider>(context, listen: false)
+        .voteBusinessReview(businessId, reviewId, voteType);
   }
 
 }

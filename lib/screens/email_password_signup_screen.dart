@@ -23,6 +23,8 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
   bool _isPasswordFocused = false;
   bool _isPasswordVisible = false;
   bool _agreeToTerms = false;
+  String? _phoneFromPreviousStep;
+  bool _argsLoaded = false;
 
   @override
   void initState() {
@@ -42,6 +44,20 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
         _isPasswordFocused = _passwordFocusNode.hasFocus;
       });
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_argsLoaded) return;
+    _argsLoaded = true;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map) {
+      final rawPhone = (args['phone'] ?? '').toString().trim();
+      if (rawPhone.isNotEmpty) {
+        _phoneFromPreviousStep = rawPhone;
+      }
+    }
   }
 
   @override
@@ -609,6 +625,7 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
       name: _fullNameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      phone: _phoneFromPreviousStep,
     );
 
     if (!mounted) return;
@@ -617,7 +634,13 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
       _showSnackBar('Account created successfully!', Colors.green);
       Navigator.pushNamedAndRemoveUntil(context, '/main-screen-of-oneconnect', (route) => false);
     } else {
-      _showSnackBar(authProvider.error ?? 'Signup failed', Colors.red);
+      final err = (authProvider.error ?? '').trim();
+      final msg = err.isEmpty
+          ? 'Signup failed'
+          : (err.toLowerCase().contains('already registered')
+              ? 'This email is already registered. Please login instead.'
+              : err);
+      _showSnackBar(msg, Colors.red);
     }
   }
 

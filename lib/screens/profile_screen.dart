@@ -244,6 +244,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               color: const Color(0xFF6D758F),
                             ),
                           ),
+                          if ((auth.user?.phone ?? '').trim().isNotEmpty) ...[
+                            SizedBox(height: _rs(context, 2)),
+                            Text(
+                              auth.user!.phone!.trim(),
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                fontSize: _rs(context, 12),
+                                color: const Color(0xFF6D758F),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       Spacer(),

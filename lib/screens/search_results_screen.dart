@@ -20,6 +20,7 @@ import 'mosque_detail_screen.dart';
 import 'property_screen.dart';
 import '../mixins/responsive_mixin.dart';
 import '../widgets/figma_filter_sheet.dart';
+import '../widgets/sticky_footer.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   final String query;
@@ -214,8 +215,8 @@ class _SearchResultsScreenState extends State<SearchResultsScreen>
         ],
       ),
 
-      // Bottom Navigation Footer
-      bottomSheet: _buildBottomNavigation(),
+      // App-wide functional footer
+      bottomNavigationBar: const StickyFooter(selectedIndex: 1),
     );
   }
 

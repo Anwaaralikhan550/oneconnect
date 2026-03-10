@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
+import '../utils/media_url.dart';
 
 class PartnerGalleryItem {
   final String id;
@@ -109,10 +110,11 @@ class _GalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedUrl = resolveMediaUrl(item.fileUrl) ?? item.fileUrl;
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () async {
-        final uri = Uri.tryParse(item.fileUrl);
+        final uri = Uri.tryParse(resolvedUrl);
         if (uri == null) return;
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       },
@@ -125,9 +127,9 @@ class _GalleryCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               item.isVideo
-                  ? _VideoThumb(url: item.fileUrl)
+                  ? _VideoThumb(url: resolvedUrl)
                   : Image.network(
-                      item.fileUrl,
+                      resolvedUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => _fallback(),
                     ),

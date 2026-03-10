@@ -1,5 +1,12 @@
 const uploadService = require('../services/upload.service');
 
+function getRequestBaseUrl(req) {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+  const host = req.headers['x-forwarded-host'] || req.get('host');
+  if (!host) return null;
+  return `${protocol}://${host}`;
+}
+
 async function uploadPartnerMedia(req, res, next) {
   try {
     if (!req.file) {
@@ -8,7 +15,8 @@ async function uploadPartnerMedia(req, res, next) {
     const result = await uploadService.uploadPartnerMedia(
       req.partner.id,
       req.file,
-      req.body.mediaType || 'PHOTO'
+      req.body.mediaType || 'PHOTO',
+      getRequestBaseUrl(req),
     );
     res.status(201).json({ success: true, data: result });
   } catch (err) {
@@ -21,7 +29,11 @@ async function uploadPartnerProfile(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadPartnerProfile(req.partner.id, req.file);
+    const result = await uploadService.uploadPartnerProfile(
+      req.partner.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -33,7 +45,11 @@ async function uploadPromotionImage(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadPromotionImage(req.partner.id, req.file);
+    const result = await uploadService.uploadPromotionImage(
+      req.partner.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -45,7 +61,11 @@ async function uploadUserProfile(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadUserProfile(req.user.id, req.file);
+    const result = await uploadService.uploadUserProfile(
+      req.user.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -57,7 +77,11 @@ async function uploadReviewMedia(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadReviewMedia(req.user.id, req.file);
+    const result = await uploadService.uploadReviewMedia(
+      req.user.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -69,7 +93,11 @@ async function uploadBusinessImage(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadBusinessImage(req.partner.id, req.file);
+    const result = await uploadService.uploadBusinessImage(
+      req.partner.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -81,7 +109,11 @@ async function uploadAmenityImage(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadAmenityImage(req.partner.id, req.file);
+    const result = await uploadService.uploadAmenityImage(
+      req.partner.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -93,7 +125,11 @@ async function uploadServiceProviderImage(req, res, next) {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'No file provided' });
     }
-    const result = await uploadService.uploadServiceProviderImage(req.partner.id, req.file);
+    const result = await uploadService.uploadServiceProviderImage(
+      req.partner.id,
+      req.file,
+      getRequestBaseUrl(req),
+    );
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -113,7 +149,8 @@ async function uploadProviderMedia(req, res, next) {
       req.partner.id,
       serviceProviderId,
       req.file,
-      req.body.mediaType || 'PHOTO'
+      req.body.mediaType || 'PHOTO',
+      getRequestBaseUrl(req),
     );
     res.status(201).json({ success: true, data: result });
   } catch (err) {
@@ -134,7 +171,8 @@ async function uploadBusinessMedia(req, res, next) {
       req.partner.id,
       businessId,
       req.file,
-      req.body.mediaType || 'PHOTO'
+      req.body.mediaType || 'PHOTO',
+      getRequestBaseUrl(req),
     );
     res.status(201).json({ success: true, data: result });
   } catch (err) {
@@ -155,7 +193,8 @@ async function uploadAmenityMedia(req, res, next) {
       req.partner.id,
       amenityId,
       req.file,
-      req.body.mediaType || 'PHOTO'
+      req.body.mediaType || 'PHOTO',
+      getRequestBaseUrl(req),
     );
     res.status(201).json({ success: true, data: result });
   } catch (err) {

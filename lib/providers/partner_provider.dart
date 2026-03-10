@@ -356,6 +356,24 @@ class PartnerProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteBusinessMedia(String mediaId) async {
+    _isSaving = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _service.deleteBusinessMedia(mediaId);
+      await fetchBusinesses();
+      return true;
+    } catch (e) {
+      _setError(e);
+      return false;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> uploadAmenityMedia(String amenityId, String filePath, {String mediaType = 'PHOTO'}) async {
     _isSaving = true;
     _error = null;
@@ -363,6 +381,24 @@ class PartnerProvider extends ChangeNotifier {
 
     try {
       await _service.uploadAmenityMedia(amenityId, filePath, mediaType: mediaType);
+      await fetchAmenities();
+      return true;
+    } catch (e) {
+      _setError(e);
+      return false;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> deleteAmenityMedia(String mediaId) async {
+    _isSaving = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _service.deleteAmenityMedia(mediaId);
       await fetchAmenities();
       return true;
     } catch (e) {

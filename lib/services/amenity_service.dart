@@ -29,11 +29,15 @@ class AmenityService {
     required double rating,
     String? ratingText,
     String? reviewText,
+    String? mediaUrl,
+    String? mediaType,
   }) async {
     final response = await _api.post('/amenities/$id/reviews', auth: true, body: {
       'rating': rating,
       if (ratingText != null) 'ratingText': ratingText,
       if (reviewText != null) 'reviewText': reviewText,
+      if (mediaUrl != null) 'mediaUrl': mediaUrl,
+      if (mediaType != null) 'mediaType': mediaType,
     });
     return ReviewModel.fromJson(response['data'] as Map<String, dynamic>);
   }

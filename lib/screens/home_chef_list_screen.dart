@@ -134,7 +134,8 @@ class _HomeChefListScreenState extends State<HomeChefListScreen>
                 context,
                 MaterialPageRoute(
                   builder: (context) => GroceryStoreScreen(storeData: {
-                    'name': item.name,
+'id': item.id,
+'name': item.name,
                     'rating': item.rating.toStringAsFixed(1),
                     'reviews': item.reviewCount.toString(),
                     'location': item.location ?? '',
@@ -590,7 +591,8 @@ class _HomeChefListScreenState extends State<HomeChefListScreen>
           context,
           MaterialPageRoute(
             builder: (context) => GroceryStoreScreen(storeData: {
-              'name': item.name,
+'id': item.id,
+'name': item.name,
               'rating': item.rating.toStringAsFixed(1),
               'reviews': item.reviewCount.toString(),
               'location': item.location ?? '',
@@ -847,7 +849,8 @@ class _HomeChefListScreenState extends State<HomeChefListScreen>
           context,
           MaterialPageRoute(
             builder: (context) => GroceryStoreScreen(storeData: {
-              'name': item.name,
+'id': item.id,
+'name': item.name,
               'rating': item.rating.toStringAsFixed(1),
               'reviews': item.reviewCount.toString(),
               'location': item.location ?? '',
@@ -1029,6 +1032,7 @@ class _HomeChefListScreenState extends State<HomeChefListScreen>
     );
   }
 }
+
 
 
 

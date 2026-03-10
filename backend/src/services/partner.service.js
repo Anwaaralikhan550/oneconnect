@@ -652,6 +652,9 @@ async function createServiceProvider(partnerId, data) {
   return prisma.serviceProvider.create({
     data: {
       ...rest,
+      isProfessionalProfileEnabled: Boolean(rest.isProfessionalProfileEnabled),
+      isFollowEnabled:
+        Boolean(rest.isProfessionalProfileEnabled) && Boolean(rest.isFollowEnabled),
       categoryId: resolvedCategoryId,
       partnerId,
       vendorId: autoVendorId,
@@ -673,8 +676,29 @@ async function updateServiceProvider(partnerId, id, data) {
   return prisma.$transaction(async (tx) => {
     const updateData = {
       ...rest,
-      // Any partner edit must go back to admin moderation queue.
-      contentStatus: 'PENDING',
+      ...(Object.prototype.hasOwnProperty.call(rest, 'isProfessionalProfileEnabled')
+        ? {
+            isProfessionalProfileEnabled: Boolean(rest.isProfessionalProfileEnabled),
+          }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(rest, 'isFollowEnabled') ||
+      Object.prototype.hasOwnProperty.call(rest, 'isProfessionalProfileEnabled')
+        ? {
+            isFollowEnabled:
+              Boolean(
+                Object.prototype.hasOwnProperty.call(rest, 'isProfessionalProfileEnabled')
+                  ? rest.isProfessionalProfileEnabled
+                  : sp.isProfessionalProfileEnabled,
+              ) &&
+              Boolean(
+                Object.prototype.hasOwnProperty.call(rest, 'isFollowEnabled')
+                  ? rest.isFollowEnabled
+                  : sp.isFollowEnabled,
+              ),
+          }
+        : {}),
+      // Temporary override: auto-approve partner edits so updates appear immediately.
+      contentStatus: 'APPROVED',
     };
     if (!sp.vendorId) {
       updateData.vendorId = await generateUniqueVendorId(tx);
@@ -744,6 +768,32 @@ async function deleteServiceProviderMedia(partnerId, mediaId) {
   await prisma.providerMedia.delete({ where: { id: mediaId } });
 }
 
+async function deleteBusinessMedia(partnerId, mediaId) {
+  const media = await prisma.businessMedia.findFirst({
+    where: {
+      id: mediaId,
+      business: { partnerId },
+    },
+    select: { id: true },
+  });
+  if (!media) throw new AppError('Media not found', 404);
+
+  await prisma.businessMedia.delete({ where: { id: mediaId } });
+}
+
+async function deleteAmenityMedia(partnerId, mediaId) {
+  const media = await prisma.amenityMedia.findFirst({
+    where: {
+      id: mediaId,
+      amenity: { partnerId },
+    },
+    select: { id: true },
+  });
+  if (!media) throw new AppError('Media not found', 404);
+
+  await prisma.amenityMedia.delete({ where: { id: mediaId } });
+}
+
 // Businesses CRUD
 async function getBusinesses(partnerId) {
   return prisma.business.findMany({
@@ -761,7 +811,12 @@ async function createBusiness(partnerId, data) {
     throw new AppError('REAL_ESTATE is managed via properties', 400);
   }
   return prisma.business.create({
-    data: { ...data, partnerId },
+    data: {
+      ...data,
+      isFollowEnabled:
+        typeof data.isFollowEnabled === 'boolean' ? data.isFollowEnabled : true,
+      partnerId,
+    },
   });
 }
 
@@ -778,8 +833,11 @@ async function updateBusiness(partnerId, id, data) {
     where: { id },
     data: {
       ...data,
-      // Any partner edit must go back to admin moderation queue.
-      contentStatus: 'PENDING',
+      ...(typeof data.isFollowEnabled === 'boolean'
+        ? { isFollowEnabled: data.isFollowEnabled }
+        : {}),
+      // Temporary override: auto-approve partner edits so updates appear immediately.
+      contentStatus: 'APPROVED',
     },
   });
 }
@@ -950,8 +1008,8 @@ async function updateAmenity(partnerId, id, data) {
     where: { id },
     data: {
       ...data,
-      // Any partner edit must go back to admin moderation queue.
-      contentStatus: 'PENDING',
+      // Temporary override: auto-approve partner edits so updates appear immediately.
+      contentStatus: 'APPROVED',
     },
   });
 }
@@ -1002,6 +1060,8 @@ module.exports = {
   deleteServiceProvider,
   getServiceProviderMedia,
   deleteServiceProviderMedia,
+  deleteBusinessMedia,
+  deleteAmenityMedia,
   getBusinesses,
   createBusiness,
   updateBusiness,

@@ -1,13 +1,17 @@
 import 'package:flutter/foundation.dart';
+import '../models/follow_card_model.dart';
 import '../models/search_result_model.dart';
 import '../models/filter_dto.dart';
+import '../services/follow_service.dart';
 import '../services/search_service.dart';
 import '../utils/api_exception.dart';
 
 class SearchProvider extends ChangeNotifier {
   final SearchService _service = SearchService();
+  final FollowService _followService = FollowService();
 
   List<SearchSuggestion> _suggestions = [];
+  List<FollowCardModel> _followCards = [];
   Map<String, dynamic>? _searchResults;
   Map<String, dynamic>? _popular;
   List<dynamic> _history = [];
@@ -15,6 +19,7 @@ class SearchProvider extends ChangeNotifier {
   String? _error;
 
   List<SearchSuggestion> get suggestions => _suggestions;
+  List<FollowCardModel> get followCards => _followCards;
   Map<String, dynamic>? get searchResults => _searchResults;
   Map<String, dynamic>? get popular => _popular;
   List<dynamic> get history => _history;
@@ -73,10 +78,54 @@ class SearchProvider extends ChangeNotifier {
 
     try {
       _popular = await _service.getPopular(filter: filter);
+      final rawCards = (_popular?['followCards'] as List?) ?? const [];
+      _followCards = rawCards
+          .whereType<Map>()
+          .map((e) => FollowCardModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
       notifyListeners();
     } catch (e) {
       debugPrint('SearchProvider.fetchPopular: $e');
     }
+  }
+
+  Future<void> toggleFollow(FollowCardModel card) async {
+    final index = _followCards.indexWhere(
+      (item) => item.id == card.id && item.entityType == card.entityType,
+    );
+    if (index == -1) return;
+
+    final existing = _followCards[index];
+    if (!existing.isFollowEnabled) return;
+
+    final optimisticFollowing = !existing.isFollowing;
+    final optimisticFollowers = optimisticFollowing
+        ? existing.followersCount + 1
+        : (existing.followersCount > 0 ? existing.followersCount - 1 : 0);
+
+    _followCards[index] = existing.copyWith(
+      isFollowing: optimisticFollowing,
+      followersCount: optimisticFollowers,
+    );
+    notifyListeners();
+
+    try {
+      final result = await _followService.toggleFollow(
+        entityType: existing.entityType,
+        entityId: existing.id,
+      );
+      _followCards[index] = existing.copyWith(
+        isFollowing: result['isFollowing'] == true,
+        followersCount: result['followersCount'] as int? ?? optimisticFollowers,
+      );
+    } on ApiException catch (e) {
+      _error = e.message;
+      _followCards[index] = existing;
+    } catch (_) {
+      _followCards[index] = existing;
+    }
+
+    notifyListeners();
   }
 
   void clearResults() {

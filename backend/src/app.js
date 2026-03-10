@@ -38,6 +38,9 @@ app.use('/admin', express.static(path.join(__dirname, '..', 'admin'), {
   },
 }));
 
+// Local uploads fallback (used when S3 is not configured)
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));

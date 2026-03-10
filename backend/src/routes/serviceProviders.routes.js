@@ -15,6 +15,7 @@ router.get('/:id/media', validate(idParamSchema, 'params'), spController.getMedi
 // Authenticated
 router.post('/:id/reviews', authGuard, validate(idParamSchema, 'params'), validate(reviewSchema), spController.addReview);
 router.post('/:id/favorite', authGuard, validate(idParamSchema, 'params'), spController.toggleFavorite);
+router.post('/:id/follow', authGuard, validate(idParamSchema, 'params'), spController.toggleFollow);
 router.post('/:id/reviews/:reviewId/vote', authGuard, spController.voteReview);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
@@ -14,11 +15,10 @@ import '../widgets/side_menu_controller.dart';
 import '../widgets/sticky_footer.dart';
 import '../widgets/profile_image.dart';
 import '../utils/profile_image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../utils/media_url.dart';
 import 'service_provider_detail_screen.dart';
 import 'location_picker_screen.dart';
 import '../widgets/figma_filter_sheet.dart';
-import '../widgets/partner_media_gallery.dart';
 
 class MainScreenOfOneConnect extends StatefulWidget {
   const MainScreenOfOneConnect({super.key});
@@ -93,10 +93,24 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
 
   Future<void> _updateProfileImage() async {
     final File? image = await ProfileImagePicker.showImageSourceDialog(context);
-    if (image != null) {
-      setState(() {
-        _profileImage = image;
-      });
+    if (image == null) return;
+
+    setState(() {
+      _profileImage = image;
+    });
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final uploadedUrl = await auth.uploadProfilePhoto(image.path);
+    if (!mounted) return;
+
+    if (uploadedUrl != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile photo updated')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.error ?? 'Profile photo upload failed')),
+      );
     }
   }
 
@@ -289,7 +303,7 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
     String? image, {
     required String fallbackAsset,
   }) {
-    final value = (image ?? '').trim();
+    final value = (resolveMediaUrl(image) ?? '').trim();
     if (value.startsWith('http')) return NetworkImage(value);
     if (value.startsWith('assets/')) return AssetImage(value);
     return AssetImage(fallbackAsset);
@@ -908,20 +922,33 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
     Navigator.pushNamed(context, '/businesses-hub');
   }
 
-  Map<String, String> _resolvedSocialLinks(Map<String, dynamic>? popular) {
-    final raw = popular?['socialLinks'];
-    if (raw is Map) {
-      return {
-        'facebook': (raw['facebook'] ?? '').toString(),
-        'instagram': (raw['instagram'] ?? '').toString(),
-        'youtube': (raw['youtube'] ?? '').toString(),
-      };
+  void _openFollowCard(dynamic card) {
+    final entityType = card.entityType.toString().toLowerCase();
+    if (entityType == 'service') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ServiceProviderDetailScreen(
+            providerName: card.name.toString(),
+            serviceType: card.subtitle.toString(),
+            providerId: card.id.toString(),
+          ),
+        ),
+      );
+      return;
     }
-    return const {
-      'facebook': '',
-      'instagram': '',
-      'youtube': '',
-    };
+
+    Navigator.pushNamed(
+      context,
+      '/grocery-store',
+      arguments: {
+        'id': card.id,
+        'name': card.name,
+        'category': card.subtitle,
+        'location': card.location,
+        'image': card.imageUrl,
+      },
+    );
   }
 
   Widget _buildMoreArrowButton(double scale) {
@@ -1639,67 +1666,168 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
   Widget _buildFollowUsSection(double scale) {
     return Consumer<SearchProvider>(
       builder: (context, searchProvider, _) {
-        final links = _resolvedSocialLinks(searchProvider.popular);
+        final cards = searchProvider.followCards;
         return Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 10 * scale),
+          padding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 0 * scale),
           decoration: BoxDecoration(
             color: const Color(0xFFFBFBFB),
             border: Border(
               top: BorderSide(color: const Color(0xFFE3E3E3), width: 1 * scale),
             ),
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                Text(
-                  'Follow Us:',
-                  style: GoogleFonts.afacad(
-                    fontSize: 18 * scale,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF000000),
-                    height: 1.33,
+          child: cards.isEmpty
+              ? SizedBox(
+                  height: 76 * scale,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'No follow cards available yet',
+                      style: GoogleFonts.afacad(
+                        fontSize: 15 * scale,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF7A7A7A),
+                      ),
+                    ),
+                  ),
+                )
+              : SizedBox(
+                  height: 76 * scale,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: cards.length,
+                    itemBuilder: (context, index) {
+                      final card = cards[index];
+                      final imageUrl = (card.imageUrl ?? '').trim();
+                      final avatarProvider = imageUrl.startsWith('http')
+                          ? CachedNetworkImageProvider(imageUrl)
+                          : _resolveImageProvider(
+                              imageUrl,
+                              fallbackAsset: 'assets/images/profile_placeholder.png',
+                            );
+
+                      return Container(
+                        width: 292 * scale,
+                        margin: EdgeInsets.only(right: 10 * scale),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(15 * scale),
+                            onTap: () => _openFollowCard(card),
+                            child: Ink(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8 * scale,
+                                vertical: 0 * scale,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15 * scale),
+                                border: Border.all(
+                                  color: const Color(0xFFD9D9D9),
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 8 * scale,
+                                    offset: Offset(0, 3 * scale),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 52 * scale,
+                                    height: 52 * scale,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      image: DecorationImage(
+                                        image: avatarProvider,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      border: Border.all(
+                                        color: const Color(0xFFD7D7D7),
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 10 * scale),
+                                  Expanded(
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                card.name,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.afacad(
+                                                  fontSize: 17 * scale,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: const Color(0xFF101010),
+                                                ),
+                                              ),
+                                            ),
+                                            if (card.isVerified) ...[
+                                              SizedBox(width: 4 * scale),
+                                              Icon(
+                                                Icons.verified_rounded,
+                                                size: 20 * scale,
+                                                color: const Color(0xFF11B6D8),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                        SizedBox(height: 2 * scale),
+                                        Text(
+                                          '${card.followersCount} Followers',
+                                          style: GoogleFonts.afacad(
+                                            fontSize: 14 * scale,
+                                            fontWeight: FontWeight.w700,
+                                            color: const Color(0xFFE53935),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(width: 8 * scale),
+                                  GestureDetector(
+                                    onTap: () => searchProvider.toggleFollow(card),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 14 * scale,
+                                        vertical: 5 * scale,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: card.isFollowing
+                                            ? const Color(0xFF171717)
+                                            : const Color(0xFF3B3B3B),
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        card.isFollowing ? 'Following' : 'Follow',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13 * scale,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                SizedBox(width: 20 * scale),
-                _buildSocialIcon(Icons.facebook, Colors.blue, scale, url: links['facebook']),
-                SizedBox(width: 20 * scale),
-                _buildSocialIcon(Icons.camera_alt, Colors.purple, scale, url: links['instagram']),
-                SizedBox(width: 20 * scale),
-                _buildSocialIcon(Icons.play_arrow, Colors.red, scale, url: links['youtube']),
-              ],
-            ),
-          ),
         );
       },
-    );
-  }
-
-  Widget _buildSocialIcon(IconData icon, Color color, double scale, {String? url}) {
-    return GestureDetector(
-      onTap: () async {
-        final value = (url ?? '').trim();
-        if (value.isNotEmpty) {
-          final uri = Uri.parse(value);
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
-        }
-      },
-      child: Container(
-        width: 40 * scale,
-        height: 40 * scale,
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20 * scale),
-        ),
-        child: Icon(
-          icon,
-          color: color,
-          size: 20 * scale,
-        ),
-      ),
     );
   }
 
@@ -2629,17 +2757,6 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
                       ),
                       ),
                     ),
-                  PartnerMediaGallery(
-                    items: reviews
-                        .where((r) => (r['productImage'] ?? '').toString().isNotEmpty)
-                        .map((r) => PartnerGalleryItem(
-                              id: (r['id'] ?? '').toString(),
-                              mediaType: 'PHOTO',
-                              fileUrl: (r['productImage'] ?? '').toString(),
-                            ))
-                        .toList(),
-                    hideWhenEmpty: true,
-                  ),
                 ],
               );
             },

@@ -1,4 +1,5 @@
 import 'promotion_model.dart';
+import '../utils/media_url.dart';
 
 class PartnerMediaModel {
   final String id;
@@ -21,7 +22,7 @@ class PartnerMediaModel {
     return PartnerMediaModel(
       id: json['id'] ?? '',
       mediaType: json['mediaType'] ?? 'IMAGE',
-      fileUrl: json['fileUrl'] ?? '',
+      fileUrl: resolveMediaUrl(json['fileUrl']?.toString()) ?? '',
       fileName: json['fileName'],
       fileSizeKb: json['fileSizeKb'] as int?,
       createdAt: json['createdAt'] != null
@@ -131,7 +132,7 @@ class PartnerModel {
       openingTime: json['openingTime'],
       closingTime: json['closingTime'],
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
-      profilePhotoUrl: json['profilePhotoUrl'],
+      profilePhotoUrl: resolveMediaUrl(json['profilePhotoUrl']?.toString()),
       description: json['description'],
       followUsEnabled: json['followUsEnabled'] ?? true,
       facebookUrl: json['facebookUrl'],

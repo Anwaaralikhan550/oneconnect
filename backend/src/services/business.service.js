@@ -100,6 +100,16 @@ async function getById(id, userId = null) {
     return { ...rest, helpfulCount, unhelpfulCount, currentUserVote };
   });
 
+  if (userId) {
+    const follow = await prisma.follow.findFirst({
+      where: { userId, targetType: 'BUSINESS', businessId: id },
+      select: { id: true },
+    });
+    business.isFollowing = Boolean(follow);
+  } else {
+    business.isFollowing = false;
+  }
+
   return business;
 }
 
@@ -114,6 +124,8 @@ async function addReview(businessId, userId, data) {
       rating: data.rating,
       ratingText: data.ratingText,
       reviewText: data.reviewText,
+      mediaUrl: data.mediaUrl || data.imageUrl || null,
+      mediaType: data.mediaType || null,
     },
     include: { user: { select: { name: true, profilePhotoUrl: true } } },
   });
@@ -132,10 +144,10 @@ async function addReview(businessId, userId, data) {
     },
   });
 
-  const submittedMediaUrl = data.mediaUrl || data.imageUrl || null;
+  const submittedMediaUrl = review.mediaUrl || data.mediaUrl || data.imageUrl || null;
   if (!submittedMediaUrl) return review;
 
-  return { ...review, mediaUrl: submittedMediaUrl };
+  return { ...review, mediaUrl: submittedMediaUrl, mediaType: review.mediaType || data.mediaType || null };
 }
 
 async function toggleFavorite(businessId, userId) {

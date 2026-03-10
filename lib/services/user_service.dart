@@ -1,5 +1,7 @@
 import '../models/user_model.dart';
 import 'api_client.dart';
+import '../utils/media_url.dart';
+import '../utils/api_exception.dart';
 
 class UserService {
   final ApiClient _api = ApiClient();
@@ -63,7 +65,16 @@ class UserService {
       fieldName: 'file',
       auth: true,
     );
-    return response['data']['fileUrl'] as String;
+    final data = response['data'];
+    String raw = '';
+    if (data is Map<String, dynamic>) {
+      raw = (data['fileUrl'] ?? data['url'] ?? data['profilePhotoUrl'] ?? '').toString().trim();
+    }
+    final resolved = (resolveMediaUrl(raw) ?? raw).trim();
+    if (resolved.isEmpty) {
+      throw ApiException('Profile upload succeeded but no image URL returned');
+    }
+    return resolved;
   }
 
   Future<String> uploadReviewMedia(String filePath) async {

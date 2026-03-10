@@ -249,6 +249,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.pushNamed(context, '/push-notification-settings');
               },
             ),
+            _buildSettingItem(
+              iconData: Icons.favorite,
+              iconColor: Color(0xFFFF5050),
+              title: 'Your Favorites',
+              hasArrow: true,
+              onTap: () {
+                Navigator.pushNamed(context, '/your-favorites');
+              },
+            ),
           ]),
           
           const SizedBox(height: 15),
@@ -394,6 +403,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSettingItem({
     String? iconAsset,
+    IconData? iconData,
+    Color? iconColor,
     required String title,
     bool hasArrow = false,
     bool hasToggle = false,
@@ -409,6 +420,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             iconAsset,
             width: 20,
             height: 20,
+          )
+        else if (iconData != null)
+          Icon(
+            iconData,
+            size: 20,
+            color: iconColor ?? const Color(0xFF3195AB),
           ),
         
         const SizedBox(width: 15),

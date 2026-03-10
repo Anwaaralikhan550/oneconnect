@@ -20,7 +20,7 @@ async function suggestions(req, res, next) {
 
 async function popular(req, res, next) {
   try {
-    const result = await searchService.popular(req.query);
+    const result = await searchService.popular(req.query, req.user?.id ?? null);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

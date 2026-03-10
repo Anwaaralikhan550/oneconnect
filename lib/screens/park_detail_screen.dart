@@ -13,7 +13,10 @@ import '../widgets/photos_and_videos_section.dart';
 import '../mixins/responsive_mixin.dart';
 import '../widgets/member_reviews_section.dart';
 import '../widgets/partner_media_gallery.dart';
-import '../widgets/review_us_section.dart';
+import '../widgets/special_offers_section.dart';
+
+
+import '../widgets/review_us_section.dart' as review_widgets;
 import '../widgets/location_section.dart';
 import '../widgets/detail_screen_header.dart';
 
@@ -78,7 +81,9 @@ class _ParkDetailScreenState extends State<ParkDetailScreen>
                   SizedBox(height: rh(10)),
                   PhotosAndVideosSection(imageUrls: detail?.media.isNotEmpty == true ? detail!.media.map((m) => m.fileUrl).toList() : (detail?.imageUrl?.isNotEmpty == true ? [detail!.imageUrl!] : [])),
                   SizedBox(height: rh(10)),
-                  ReviewUsSection(
+                  SpecialOffersSection(promotions: detail?.promotions ?? const []),
+                  SizedBox(height: rh(10)),
+                  review_widgets.ReviewUsSection(
               entityName: detail?.name ?? widget.parkData?['name'] ?? 'Park',
               entityImageUrl: detail?.imageUrl ?? widget.parkData?['image'],
               displayMetric: "${detail?.reviewCount ?? widget.parkData?['reviewCount'] ?? widget.parkData?['reviews'] ?? 0} Reviews",
@@ -498,6 +503,10 @@ class _ParkDetailScreenState extends State<ParkDetailScreen>
         .voteAmenityReview(amenityId, reviewId, voteType);
   }
 }
+
+
+
+
 
 
 

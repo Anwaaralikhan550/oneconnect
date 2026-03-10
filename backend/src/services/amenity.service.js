@@ -64,8 +64,21 @@ async function getById(id, userId = null) {
   const amenity = await prisma.amenity.findUnique({
     where: { id },
     include: {
-      partner: { select: { status: true } },
       media: { orderBy: { createdAt: 'desc' } },
+      partner: {
+        select: {
+          status: true,
+          promotions: {
+            where: {
+              contentStatus: 'APPROVED',
+              isActive: true,
+              OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          },
+        },
+      },
       reviews: {
         include: {
           user: { select: { name: true, profilePhotoUrl: true } },
@@ -94,6 +107,8 @@ async function getById(id, userId = null) {
     return { ...rest, helpfulCount, unhelpfulCount, currentUserVote };
   });
 
+  amenity.promotions = amenity.partner?.promotions || [];
+
   return amenity;
 }
 
@@ -108,6 +123,8 @@ async function addReview(amenityId, userId, data) {
       rating: data.rating,
       ratingText: data.ratingText,
       reviewText: data.reviewText,
+      mediaUrl: data.mediaUrl || data.imageUrl || null,
+      mediaType: data.mediaType || null,
     },
     include: { user: { select: { name: true, profilePhotoUrl: true } } },
   });
@@ -126,10 +143,10 @@ async function addReview(amenityId, userId, data) {
     },
   });
 
-  const submittedMediaUrl = data.mediaUrl || data.imageUrl || null;
+  const submittedMediaUrl = review.mediaUrl || data.mediaUrl || data.imageUrl || null;
   if (!submittedMediaUrl) return review;
 
-  return { ...review, mediaUrl: submittedMediaUrl };
+  return { ...review, mediaUrl: submittedMediaUrl, mediaType: review.mediaType || data.mediaType || null };
 }
 
 async function toggleFavorite(amenityId, userId) {

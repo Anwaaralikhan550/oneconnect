@@ -1,5 +1,6 @@
 import 'review_model.dart';
 import 'promotion_model.dart';
+import '../utils/media_url.dart';
 
 class BusinessMediaModel {
   final String id;
@@ -20,7 +21,7 @@ class BusinessMediaModel {
     return BusinessMediaModel(
       id: json['id'] ?? '',
       mediaType: json['mediaType'] ?? 'PHOTO',
-      fileUrl: json['fileUrl'] ?? '',
+      fileUrl: resolveMediaUrl(json['fileUrl']?.toString()) ?? '',
       fileName: json['fileName'],
       fileSizeKb: json['fileSizeKb'] as int?,
     );
@@ -43,6 +44,8 @@ class BusinessModel {
   final List<String> operatingDays;
   final List<String> servicesOffered;
   final int followersCount;
+  final bool isFollowEnabled;
+  final bool isFollowing;
   final String? imageUrl;
   final String? phone;
   final String? description;
@@ -70,6 +73,8 @@ class BusinessModel {
     this.operatingDays = const [],
     this.servicesOffered = const [],
     this.followersCount = 0,
+    this.isFollowEnabled = true,
+    this.isFollowing = false,
     this.imageUrl,
     this.phone,
     this.description,
@@ -109,7 +114,9 @@ class BusinessModel {
       operatingDays: (json['operatingDays'] as List?)?.map((d) => d.toString()).toList() ?? [],
       servicesOffered: (json['servicesOffered'] as List?)?.map((s) => s.toString()).toList() ?? [],
       followersCount: json['followersCount'] ?? 0,
-      imageUrl: json['imageUrl'],
+      isFollowEnabled: json['isFollowEnabled'] ?? true,
+      isFollowing: json['isFollowing'] ?? false,
+      imageUrl: resolveMediaUrl(json['imageUrl']?.toString()),
       phone: json['phone'],
       description: json['description'],
       facebookUrl: json['facebookUrl'],
@@ -143,6 +150,8 @@ class BusinessModel {
       operatingDays: operatingDays,
       servicesOffered: servicesOffered,
       followersCount: followersCount,
+      isFollowEnabled: isFollowEnabled,
+      isFollowing: isFollowing,
       imageUrl: imageUrl,
       phone: phone,
       description: description,

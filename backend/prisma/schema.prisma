@@ -66,6 +66,11 @@ enum FavoriteTargetType {
   PROPERTY
 }
 
+enum FollowTargetType {
+  SERVICE_PROVIDER
+  BUSINESS
+}
+
 enum NotificationType {
   PROMOTION
   REVIEW
@@ -125,6 +130,7 @@ model User {
   reviews       Review[]
   reviewVotes   ReviewVote[]
   favorites     Favorite[]
+  follows       Follow[]
   searchHistory SearchHistory[]
   notifications Notification[]
   refreshTokens RefreshToken[]
@@ -272,6 +278,9 @@ model ServiceProvider {
   responseTime       String?     // "Within 1 hour"
   workingSince       String?     // "2018"
   imageUrl           String?
+  followersCount     Int         @default(0)
+  isFollowEnabled    Boolean     @default(false)
+  isProfessionalProfileEnabled Boolean @default(false)
 
   // Doctor-specific fields
   patientsCount      Int?
@@ -289,6 +298,7 @@ model ServiceProvider {
   skills   ServiceProviderSkill[]
   reviews  Review[]
   favorites Favorite[]
+  follows  Follow[]
   bookings Booking[] @relation("ProviderBookings")
   media    ProviderMedia[]
   properties Property[]
@@ -339,6 +349,7 @@ model Business {
   operatingDays String[]      @default([])
   servicesOffered String[]    @default([])
   followersCount Int          @default(0)
+  isFollowEnabled Boolean     @default(true)
   imageUrl   String?
   phone      String?
   description String?
@@ -353,6 +364,7 @@ model Business {
   partner   Partner?   @relation(fields: [partnerId], references: [id], onDelete: SetNull)
   reviews   Review[]
   favorites Favorite[]
+  follows   Follow[]
   media     BusinessMedia[]
   promotions Promotion[]
 
@@ -492,6 +504,8 @@ model Review {
   rating            Float
   ratingText        String? // "Excellent", "Good", etc.
   reviewText        String?
+  mediaUrl          String?
+  mediaType         MediaType?
   serviceProviderId String?
   businessId        String?
   amenityId         String?
@@ -544,6 +558,25 @@ model Favorite {
   @@unique([userId, targetType, amenityId])
   @@unique([userId, targetType, propertyId])
   @@map("favorites")
+}
+
+model Follow {
+  id                String           @id @default(uuid())
+  userId            String
+  targetType        FollowTargetType
+  serviceProviderId String?
+  businessId        String?
+  createdAt         DateTime         @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceProvider ServiceProvider? @relation(fields: [serviceProviderId], references: [id], onDelete: Cascade)
+  business        Business?        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetType, serviceProviderId])
+  @@unique([userId, targetType, businessId])
+  @@index([businessId])
+  @@index([serviceProviderId])
+  @@map("follows")
 }
 
 model SearchHistory {

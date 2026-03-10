@@ -1,16 +1,19 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/service_provider_provider.dart';
 import '../providers/favorite_provider.dart';
+import '../providers/search_provider.dart';
 import '../models/service_provider_model.dart';
 import '../models/filter_dto.dart';
 import '../widgets/sticky_footer.dart';
 import '../utils/profile_image_picker.dart';
 import '../widgets/figma_filter_sheet.dart';
 import '../widgets/partner_media_gallery.dart';
+import '../widgets/profile_image.dart';
 import 'service_provider_detail_screen.dart';
 
 class ServicesHubScreen extends StatefulWidget {
@@ -37,6 +40,8 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
   bool _isServicesExpanded = false;
 
   File? _profileImage;
+  Timer? _suggestionDebounce;
+  bool _showSuggestions = false;
 
   static const List<String> _serviceTypes = [
     'LAUNDRY',
@@ -57,6 +62,7 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AuthProvider>(context, listen: false).fetchProfile();
       final provider = Provider.of<ServiceProviderProvider>(context, listen: false);
       Provider.of<FavoriteProvider>(context, listen: false).hydrateFavorites();
       final filter = _activeFilterDto;
@@ -68,17 +74,57 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
 
   Future<void> _updateProfileImage() async {
     final File? image = await ProfileImagePicker.showImageSourceDialog(context);
-    if (image != null) {
-      setState(() {
-        _profileImage = image;
-      });
+    if (image == null) return;
+
+    setState(() {
+      _profileImage = image;
+    });
+
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    final uploadedUrl = await auth.uploadProfilePhoto(image.path);
+    if (!mounted) return;
+
+    if (uploadedUrl != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profile photo updated')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(auth.error ?? 'Profile photo upload failed')),
+      );
     }
   }
 
   @override
   void dispose() {
+    _suggestionDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    final query = value.trim();
+    _suggestionDebounce?.cancel();
+
+    if (query.isEmpty) {
+      setState(() => _showSuggestions = false);
+      Provider.of<SearchProvider>(context, listen: false).fetchSuggestions('');
+      return;
+    }
+
+    _suggestionDebounce = Timer(const Duration(milliseconds: 300), () async {
+      if (!mounted) return;
+      await Provider.of<SearchProvider>(context, listen: false)
+          .fetchSuggestions(query);
+      if (mounted) setState(() => _showSuggestions = true);
+    });
+  }
+
+  void _onSuggestionTap(String suggestion) {
+    _searchController.text = suggestion;
+    _suggestionDebounce?.cancel();
+    setState(() => _showSuggestions = false);
+    _submitSearch();
   }
 
   void _showFilterOptions() {
@@ -130,9 +176,39 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
     }
   }
 
+  void _submitSearch() {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+
+    FocusScope.of(context).unfocus();
+
+    final lowerQuery = query.toLowerCase();
+    if (lowerQuery == 'property' ||
+        lowerQuery.contains('property') ||
+        lowerQuery == 'real estate' ||
+        lowerQuery.contains('real estate')) {
+      Navigator.pushNamed(context, '/property');
+      return;
+    }
+    if (lowerQuery == 'electrician' || lowerQuery.contains('electrician')) {
+      Navigator.pushNamed(context, '/electricians');
+      return;
+    }
+
+    Navigator.pushNamed(
+      context,
+      '/search-results',
+      arguments: {
+        'query': query,
+        'filter': _activeFilterDto.toQueryParams(),
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: Column(
         children: [
@@ -329,10 +405,18 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
                                     ),
                                   ),
                                 )
-                              : SvgPicture.asset(
-                                  'assets/images/profile_photo_frame.svg',
-                                  width: 61,
-                                  height: 61,
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: const Color(0xFF044870), width: 2),
+                                  ),
+                                  child: ClipOval(
+                                    child: buildProfileImage(
+                                      Provider.of<AuthProvider>(context).user?.profilePhotoUrl,
+                                      fallbackIcon: Icons.person,
+                                      iconSize: 30,
+                                    ),
+                                  ),
                                 ),
                         ),
                       ),
@@ -389,8 +473,63 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return Center(
-            child: _buildSearchBar(constraints.maxWidth),
+          return Column(
+            children: [
+              Center(
+                child: _buildSearchBar(constraints.maxWidth),
+              ),
+              if (_showSuggestions)
+                Consumer<SearchProvider>(
+                  builder: (context, searchProvider, _) {
+                    final suggestions = searchProvider.suggestions.take(5).toList();
+                    if (suggestions.isEmpty) return const SizedBox.shrink();
+                    final panelHeight = (suggestions.length * 56.0).clamp(56.0, 180.0);
+                    return Container(
+                      width: (constraints.maxWidth * 0.90).clamp(320.0, 380.0),
+                      margin: const EdgeInsets.only(top: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE8E8E8)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: SizedBox(
+                        height: panelHeight,
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: suggestions.length,
+                          itemBuilder: (_, index) {
+                            final s = suggestions[index];
+                            return ListTile(
+                              dense: true,
+                              leading: const Icon(Icons.search, size: 18, color: Color(0xFF4A4A4A)),
+                              title: Text(
+                                s.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 14, color: Color(0xFF222222)),
+                              ),
+                              subtitle: Text(
+                                s.type,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 11, color: Color(0xFF8A8A8A)),
+                              ),
+                              onTap: () => _onSuggestionTap(s.name),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
           );
         },
       ),
@@ -434,6 +573,9 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
             bottom: 0,
             child: TextField(
               controller: _searchController,
+              textInputAction: TextInputAction.search,
+              onChanged: _onSearchChanged,
+              onSubmitted: (_) => _submitSearch(),
               enableInteractiveSelection: false,
               contextMenuBuilder: (context, state) => const SizedBox.shrink(),
               decoration: InputDecoration(

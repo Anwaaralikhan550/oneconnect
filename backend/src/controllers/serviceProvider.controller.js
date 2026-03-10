@@ -1,4 +1,5 @@
 const spService = require('../services/serviceProvider.service');
+const followService = require('../services/follow.service');
 
 async function list(req, res, next) {
   try {
@@ -55,6 +56,15 @@ async function toggleFavorite(req, res, next) {
   }
 }
 
+async function toggleFollow(req, res, next) {
+  try {
+    const result = await followService.toggleServiceProviderFollow(req.params.id, req.user.id);
+    res.json({ success: true, data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function voteReview(req, res, next) {
   try {
     const { voteType } = req.body;
@@ -68,4 +78,4 @@ async function voteReview(req, res, next) {
   }
 }
 
-module.exports = { list, getSkillSuggestions, getById, getMedia, addReview, toggleFavorite, voteReview };
+module.exports = { list, getSkillSuggestions, getById, getMedia, addReview, toggleFavorite, toggleFollow, voteReview };

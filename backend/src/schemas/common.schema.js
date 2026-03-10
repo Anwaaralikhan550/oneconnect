@@ -88,6 +88,7 @@ const reviewSchema = Joi.object({
   reviewText: Joi.string().max(2000).allow('', null),
   imageUrl: Joi.string().uri().allow('', null),
   mediaUrl: Joi.string().uri().allow('', null),
+  mediaType: Joi.string().valid('PHOTO', 'VIDEO').allow('', null),
 });
 
 const searchQuerySchema = Joi.object({
@@ -193,6 +194,8 @@ const serviceProviderCreateSchema = Joi.object({
   experienceYears: Joi.number().integer().min(0).allow(null),
   hospitalName: Joi.string().max(200).allow('', null),
   consultationCharge: Joi.number().min(0).allow(null),
+  isFollowEnabled: Joi.boolean().allow(null),
+  isProfessionalProfileEnabled: Joi.boolean().allow(null),
   contentStatus: Joi.string().valid('PENDING'),
 });
 
@@ -213,6 +216,7 @@ const businessCreateSchema = Joi.object({
   instagramUrl: Joi.string().uri().max(500).allow('', null),
   whatsapp: Joi.string().max(50).allow('', null),
   websiteUrl: Joi.string().uri().max(500).allow('', null),
+  isFollowEnabled: Joi.boolean().allow(null),
   contentStatus: Joi.string().valid('PENDING'),
 });
 

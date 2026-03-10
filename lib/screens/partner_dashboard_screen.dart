@@ -44,6 +44,12 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   static const String _catAmenities = 'Amenities';
   final bool _promotionsEnabled = false;
   bool _profileSynced = false;
+  bool _expandBusinessTimings = true;
+  bool _expandBusinessAddress = false;
+  bool _expandContactInfo = false;
+  bool _expandGeneralSettings = false;
+  bool _expandMediaUpload = false;
+  bool _expandPromotions = false;
 
   // Social links (partner profile)
   final TextEditingController _facebookController = TextEditingController();
@@ -84,6 +90,8 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   String? _spImageUrl;
   File? _spImageFile;
   String? _spServiceType;
+  bool _spFollowEnabled = false;
+  bool _spProfessionalProfileEnabled = false;
   String? _editingServiceProviderId;
   List<String> _spSelectedSkills = [];
   List<String> _spSuggestedSkills = [];
@@ -110,6 +118,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   String? _bizImageUrl;
   File? _bizImageFile;
   String? _bizCategory;
+  bool _bizFollowEnabled = true;
   String? _bizPropertyType;
   String? _bizPropertyPurpose;
   String? _bizPropertyStatus;
@@ -284,6 +293,8 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     setState(() {
       _editingServiceProviderId = null;
       _spServiceType = null;
+      _spFollowEnabled = false;
+      _spProfessionalProfileEnabled = false;
       _spImageUrl = null;
       _spImageFile = null;
       _spSelectedSkills = [];
@@ -312,6 +323,8 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     setState(() {
       _editingServiceProviderId = sp.id;
       _spServiceType = sp.serviceType;
+      _spFollowEnabled = sp.isFollowEnabled;
+      _spProfessionalProfileEnabled = sp.isProfessionalProfileEnabled;
       _spSelectedSkills = List<String>.from(sp.skills);
     });
     await _loadSkillSuggestionsForType(sp.serviceType);
@@ -353,6 +366,8 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     _setDashboardCategory(_catServices);
     setState(() {
       _spServiceType = 'REAL_ESTATE';
+      _spProfessionalProfileEnabled = true;
+      _spFollowEnabled = true;
       if (_spNameController.text.trim().isEmpty) {
         _spNameController.text = (partner?.businessName ?? '').trim();
       }
@@ -502,36 +517,151 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     }
 
     try {
+      int uploadedCount = 0;
       if (isVideo) {
         final picked = await _imagePicker.pickVideo(source: ImageSource.gallery);
         if (picked == null) return;
-        await Provider.of<PartnerProvider>(context, listen: false).uploadProviderMedia(
+        final ok = await Provider.of<PartnerProvider>(context, listen: false).uploadProviderMedia(
           providerId,
           picked.path,
           mediaType: 'VIDEO',
         );
+        if (ok) uploadedCount = 1;
       } else {
         final pickedFiles = await _imagePicker.pickMultiImage(imageQuality: 85);
         if (pickedFiles.isEmpty) return;
         for (final file in pickedFiles) {
-          await Provider.of<PartnerProvider>(context, listen: false).uploadProviderMedia(
+          final ok = await Provider.of<PartnerProvider>(context, listen: false).uploadProviderMedia(
             providerId,
             file.path,
             mediaType: 'PHOTO',
           );
+          if (ok) uploadedCount += 1;
         }
       }
       if (!mounted) return;
       await Provider.of<PartnerProvider>(context, listen: false)
           .fetchServiceProviderMedia(providerId, force: true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            uploadedCount > 0
+                ? '$uploadedCount media uploaded successfully'
+                : 'Media upload failed',
+          ),
+        ),
+      );
     } catch (e) {
       debugPrint('Error uploading provider media: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to upload media')),
+      );
     }
   }
 
   Future<void> _deleteServiceProviderMedia(String providerId, String mediaId) async {
-    await Provider.of<PartnerProvider>(context, listen: false)
+    final ok = await Provider.of<PartnerProvider>(context, listen: false)
         .deleteServiceProviderMedia(providerId, mediaId);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? 'Media deleted' : 'Failed to delete media')),
+    );
+  }
+
+  Future<void> _deleteBusinessMedia(String mediaId) async {
+    final ok = await Provider.of<PartnerProvider>(context, listen: false)
+        .deleteBusinessMedia(mediaId);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? 'Media deleted' : 'Failed to delete media')),
+    );
+  }
+
+  Future<void> _deleteAmenityMedia(String mediaId) async {
+    final ok = await Provider.of<PartnerProvider>(context, listen: false)
+        .deleteAmenityMedia(mediaId);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(ok ? 'Media deleted' : 'Failed to delete media')),
+    );
+  }
+
+  bool _isVideoType(String mediaType) => mediaType.trim().toUpperCase() == 'VIDEO';
+
+  Future<void> _openMediaUrl(String rawUrl) async {
+    final url = Uri.parse(rawUrl);
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Widget _buildMediaThumb({
+    required String fileUrl,
+    required String mediaType,
+    required double size,
+    VoidCallback? onDelete,
+  }) {
+    final isVideo = _isVideoType(mediaType);
+    return Container(
+      width: size,
+      height: size,
+      margin: EdgeInsets.only(right: size * 0.2),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () => _openMediaUrl(fileUrl),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(size * 0.18),
+                child: isVideo
+                    ? Container(
+                        color: const Color(0xFFDCE2EA),
+                        child: Icon(
+                          Icons.play_circle_fill_rounded,
+                          color: const Color(0xFF375EF9),
+                          size: size * 0.5,
+                        ),
+                      )
+                    : Image.network(
+                        fileUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFFDCE2EA),
+                          child: Icon(
+                            Icons.broken_image_outlined,
+                            color: Colors.grey.shade600,
+                            size: size * 0.45,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          ),
+          if (onDelete != null)
+            Positioned(
+              right: 2,
+              top: 2,
+              child: GestureDetector(
+                onTap: onDelete,
+                child: Container(
+                  width: size * 0.32,
+                  height: size * 0.32,
+                  decoration: const BoxDecoration(
+                    color: Color(0xCCFFFFFF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    size: size * 0.2,
+                    color: const Color(0xFF222222),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   List<String> _parseCsvList(String input) {
@@ -665,6 +795,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
       _bizImageUrl = null;
       _bizImageFile = null;
       _bizCategory = null;
+      _bizFollowEnabled = true;
       _bizPropertyType = null;
       _bizPropertyPurpose = null;
       _bizPropertyStatus = null;
@@ -744,6 +875,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     setState(() {
       _editingBusinessId = biz.id;
       _bizCategory = category;
+      _bizFollowEnabled = biz.isFollowEnabled;
       _bizPropertyType = category == 'REAL_ESTATE' ? (propertyType ?? 'House') : null;
       _bizPropertyPurpose = category == 'REAL_ESTATE' ? (propertyPurpose ?? 'RENTAL') : null;
       _bizPropertyStatus = category == 'REAL_ESTATE' ? (propertyStatus ?? 'FEATURED') : null;
@@ -968,6 +1100,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
       return {
         'name': name,
         'category': category,
+        'isFollowEnabled': _bizFollowEnabled,
         'location': _bizLocationController.text.trim(),
         if (_bizPhoneController.text.trim().isNotEmpty) 'phone': _bizPhoneController.text.trim(),
         if (_bizDescController.text.trim().isNotEmpty) 'description': _bizDescController.text.trim(),
@@ -991,6 +1124,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     return {
       'name': name,
       'category': category,
+      'isFollowEnabled': _bizFollowEnabled,
       if (_bizLocationController.text.trim().isNotEmpty) 'location': _bizLocationController.text.trim(),
       if (_bizPhoneController.text.trim().isNotEmpty) 'phone': _bizPhoneController.text.trim(),
       if (_bizDescController.text.trim().isNotEmpty) 'description': _bizDescController.text.trim(),
@@ -1161,10 +1295,18 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
           ? await _imagePicker.pickVideo(source: ImageSource.gallery)
           : await _imagePicker.pickImage(source: ImageSource.gallery);
       if (pickedFile == null) return;
-      await Provider.of<PartnerProvider>(context, listen: false)
+      final ok = await Provider.of<PartnerProvider>(context, listen: false)
           .uploadBusinessMedia(businessId, pickedFile.path, mediaType: isVideo ? 'VIDEO' : 'PHOTO');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(ok ? 'Business media uploaded' : 'Business media upload failed')),
+      );
     } catch (e) {
       debugPrint('Error uploading business media: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to upload business media')),
+      );
     }
   }
 
@@ -1174,10 +1316,18 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
           ? await _imagePicker.pickVideo(source: ImageSource.gallery)
           : await _imagePicker.pickImage(source: ImageSource.gallery);
       if (pickedFile == null) return;
-      await Provider.of<PartnerProvider>(context, listen: false)
+      final ok = await Provider.of<PartnerProvider>(context, listen: false)
           .uploadAmenityMedia(amenityId, pickedFile.path, mediaType: isVideo ? 'VIDEO' : 'PHOTO');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(ok ? 'Amenity media uploaded' : 'Amenity media upload failed')),
+      );
     } catch (e) {
       debugPrint('Error uploading amenity media: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to upload amenity media')),
+      );
     }
   }
 
@@ -1279,28 +1429,58 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                                 if (_dashboardCategory != null) ...[
                                   SizedBox(height: 20 * scale),
 
-                                  // Business timings card
-                                  _buildBusinessTimingsCard(context, scale),
+                                  _buildDashboardDropdownSection(
+                                    title: 'Business timings',
+                                    subtitle: 'Control your working hours',
+                                    expanded: _expandBusinessTimings,
+                                    onToggle: () => setState(() => _expandBusinessTimings = !_expandBusinessTimings),
+                                    scale: scale,
+                                    child: _buildBusinessTimingsCard(context, scale, showSectionHeader: false),
+                                  ),
 
                                   SizedBox(height: 20 * scale),
 
-                                  // Business Address card
-                                  _buildBusinessAddressCard(context, scale),
+                                  _buildDashboardDropdownSection(
+                                    title: 'Business Address',
+                                    subtitle: 'Set your precise business location',
+                                    expanded: _expandBusinessAddress,
+                                    onToggle: () => setState(() => _expandBusinessAddress = !_expandBusinessAddress),
+                                    scale: scale,
+                                    child: _buildBusinessAddressCard(context, scale, showSectionHeader: false),
+                                  ),
 
                                   SizedBox(height: 20 * scale),
 
-                                  // Contact Information card
-                                  _buildContactInformationCard(context, scale),
+                                  _buildDashboardDropdownSection(
+                                    title: 'Contact Information',
+                                    subtitle: 'Enter your business mobile number',
+                                    expanded: _expandContactInfo,
+                                    onToggle: () => setState(() => _expandContactInfo = !_expandContactInfo),
+                                    scale: scale,
+                                    child: _buildContactInformationCard(context, scale, showSectionHeader: false),
+                                  ),
 
                                   SizedBox(height: 20 * scale),
 
-                                  // General Settings card
-                                  _buildGeneralSettingsCard(context, scale),
+                                  _buildDashboardDropdownSection(
+                                    title: 'General Settings',
+                                    subtitle: 'See your customer rating and reviews',
+                                    expanded: _expandGeneralSettings,
+                                    onToggle: () => setState(() => _expandGeneralSettings = !_expandGeneralSettings),
+                                    scale: scale,
+                                    child: _buildGeneralSettingsCard(context, scale, showSectionHeader: false),
+                                  ),
 
                                   SizedBox(height: 20 * scale),
 
-                                  // Media Upload card
-                                  _buildMediaUploadCard(context, scale),
+                                  _buildDashboardDropdownSection(
+                                    title: 'Media Upload',
+                                    subtitle: 'Showcase your business to customers',
+                                    expanded: _expandMediaUpload,
+                                    onToggle: () => setState(() => _expandMediaUpload = !_expandMediaUpload),
+                                    scale: scale,
+                                    child: _buildMediaUploadCard(context, scale),
+                                  ),
 
                                   SizedBox(height: 20 * scale),
 
@@ -1320,8 +1500,14 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                                   ],
 
                                   if (_dashboardCategory == _catBusinesses) ...[
-                                    // Promotions card
-                                    _buildPromotionsCard(context, scale),
+                                    _buildDashboardDropdownSection(
+                                      title: 'Promotions',
+                                      subtitle: 'Create offers and discounts',
+                                      expanded: _expandPromotions,
+                                      onToggle: () => setState(() => _expandPromotions = !_expandPromotions),
+                                      scale: scale,
+                                      child: _buildPromotionsCard(context, scale),
+                                    ),
                                     SizedBox(height: 30 * scale),
                                   ],
 
@@ -1867,7 +2053,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     );
   }
 
-  Widget _buildBusinessTimingsCard(BuildContext context, double scale) {
+  Widget _buildBusinessTimingsCard(BuildContext context, double scale, {bool showSectionHeader = true}) {
     final partner = context.watch<PartnerProvider>().partner;
 
     return Container(
@@ -1887,26 +2073,26 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Heading
-          Text(
-            'Business timings',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w700,
-              fontSize: 16 * scale,
-              color: const Color(0xFF19213D),
+          if (showSectionHeader) ...[
+            Text(
+              'Business timings',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 16 * scale,
+                color: const Color(0xFF19213D),
+              ),
             ),
-          ),
-          SizedBox(height: 4 * scale),
-          // Subtitle
-          Text(
-            'Control your working hours and business presence',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w400,
-              fontSize: 12 * scale,
-              color: const Color(0xFF6D758F),
+            SizedBox(height: 4 * scale),
+            Text(
+              'Control your working hours and business presence',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w400,
+                fontSize: 12 * scale,
+                color: const Color(0xFF6D758F),
+              ),
             ),
-          ),
-          SizedBox(height: 20 * scale),
+            SizedBox(height: 20 * scale),
+          ],
 
           // Business Open/Closed toggle
           Row(
@@ -2065,6 +2251,69 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     } catch (_) {
       return candidate;
     }
+  }
+
+  Widget _buildDashboardDropdownSection({
+    required String title,
+    required String subtitle,
+    required bool expanded,
+    required VoidCallback onToggle,
+    required double scale,
+    required Widget child,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 16 * scale, vertical: 14 * scale),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F5F7),
+        borderRadius: BorderRadius.circular(16 * scale),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: onToggle,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18 * scale,
+                          color: const Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      SizedBox(height: 4 * scale),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13 * scale,
+                          color: const Color(0xFF3F3F3F),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                  color: const Color(0xFF1A1A1A),
+                  size: 24 * scale,
+                ),
+              ],
+            ),
+          ),
+          if (expanded) ...[
+            SizedBox(height: 12 * scale),
+            child,
+          ],
+        ],
+      ),
+    );
   }
 
   Future<void> _editTime(BuildContext context, {required bool isOpening}) async {
@@ -2268,7 +2517,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     );
   }
 
-  Widget _buildBusinessAddressCard(BuildContext context, double scale) {
+  Widget _buildBusinessAddressCard(BuildContext context, double scale, {bool showSectionHeader = true}) {
     final partner = Provider.of<PartnerProvider>(context, listen: false).partner;
     final addressLine1 = partner?.address ?? 'No address set';
     final addressLine2 = partner?.area ?? '';
@@ -2291,26 +2540,26 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Heading
-          Text(
-            'Business Address',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w700,
-              fontSize: 16 * scale,
-              color: const Color(0xFF19213D),
+          if (showSectionHeader) ...[
+            Text(
+              'Business Address',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 16 * scale,
+                color: const Color(0xFF19213D),
+              ),
             ),
-          ),
-          SizedBox(height: 4 * scale),
-          // Subtitle
-          Text(
-            'Set your precise business location to help customers find you easily',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w400,
-              fontSize: 12 * scale,
-              color: const Color(0xFF6D758F),
+            SizedBox(height: 4 * scale),
+            Text(
+              'Set your precise business location to help customers find you easily',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w400,
+                fontSize: 12 * scale,
+                color: const Color(0xFF6D758F),
+              ),
             ),
-          ),
-          SizedBox(height: 16 * scale),
+            SizedBox(height: 16 * scale),
+          ],
 
           // Address section with buttons
           Row(
@@ -2440,7 +2689,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     );
   }
 
-  Widget _buildContactInformationCard(BuildContext context, double scale) {
+  Widget _buildContactInformationCard(BuildContext context, double scale, {bool showSectionHeader = true}) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(12 * scale),
@@ -2458,26 +2707,26 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Heading
-          Text(
-            'Contact Information',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w700,
-              fontSize: 16 * scale,
-              color: const Color(0xFF19213D),
+          if (showSectionHeader) ...[
+            Text(
+              'Contact Information',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 16 * scale,
+                color: const Color(0xFF19213D),
+              ),
             ),
-          ),
-          SizedBox(height: 4 * scale),
-          // Subtitle
-          Text(
-            'Enter your business mobile number',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w400,
-              fontSize: 12 * scale,
-              color: const Color(0xFF6D758F),
+            SizedBox(height: 4 * scale),
+            Text(
+              'Enter your business mobile number',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w400,
+                fontSize: 12 * scale,
+                color: const Color(0xFF6D758F),
+              ),
             ),
-          ),
-          SizedBox(height: 16 * scale),
+            SizedBox(height: 16 * scale),
+          ],
 
           // Phone input section
           Column(
@@ -2666,7 +2915,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     );
   }
 
-  Widget _buildGeneralSettingsCard(BuildContext context, double scale) {
+  Widget _buildGeneralSettingsCard(BuildContext context, double scale, {bool showSectionHeader = true}) {
     double w(double v) => v * scale;
     double fs(double v) => v * scale;
     final provider = Provider.of<PartnerProvider>(context, listen: false);
@@ -2688,16 +2937,17 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Heading
-          Text(
-            'General Settings',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w700,
-              fontSize: 16 * scale,
-              color: const Color(0xFF19213D),
+          if (showSectionHeader) ...[
+            Text(
+              'General Settings',
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 16 * scale,
+                color: const Color(0xFF19213D),
+              ),
             ),
-          ),
-          SizedBox(height: 16 * scale),
+            SizedBox(height: 16 * scale),
+          ],
 
           // Category selection row
           Row(
@@ -2779,9 +3029,9 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                   ),
                   SizedBox(width: 12 * scale),
 
-                  // Follow Us label
+                  // Follow Me label
                   Text(
-                    'Follow Us',
+                    'Follow Me',
                     style: GoogleFonts.inter(
                       fontSize: 16 * scale,
                       fontWeight: FontWeight.w400,
@@ -3198,14 +3448,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                 right: w(20),
                 bottom: w(10),
               ),
-              child: GestureDetector(
-                onTap: () async {
-                  final url = Uri.parse(mediaItem.fileUrl);
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  }
-                },
-                child: Container(
+              child: Container(
                   width: double.infinity,
                   padding: EdgeInsets.all(w(10)),
                   decoration: BoxDecoration(
@@ -3217,24 +3460,12 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                       Row(
                         children: [
                           // Thumbnail image
-                          Container(
-                            width: w(45),
-                            height: w(45),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(w(10)),
-                              color: Colors.grey.withOpacity(0.35),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(w(10)),
-                              child: Image.network(
-                                mediaItem.fileUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Icon(
-                                  Icons.image,
-                                  size: w(25),
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
+                          GestureDetector(
+                            onTap: () => _openMediaUrl(mediaItem.fileUrl),
+                            child: _buildMediaThumb(
+                              fileUrl: mediaItem.fileUrl,
+                              mediaType: mediaItem.mediaType,
+                              size: w(45),
                             ),
                           ),
                           SizedBox(width: w(15)),
@@ -3340,7 +3571,6 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                     ],
                   ),
                 ),
-              ),
             );
           }),
 
@@ -3653,6 +3883,72 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                 SizedBox(height: w(10)),
                 _buildFormField('Response Time', _spResponseTimeController, 'e.g. Within 1 hour', w, fs),
                 SizedBox(height: w(10)),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: w(12), vertical: w(6)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(w(10)),
+                    border: Border.all(color: const Color(0xFFE3E7EE), width: 1),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Professional Profile',
+                              style: GoogleFonts.inter(
+                                fontSize: fs(13),
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF19213D),
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: _spProfessionalProfileEnabled,
+                            onChanged: (value) {
+                              setState(() {
+                                _spProfessionalProfileEnabled = value;
+                                if (!value) {
+                                  _spFollowEnabled = false;
+                                }
+                              });
+                            },
+                            activeColor: Colors.white,
+                            activeTrackColor: const Color(0xFF02A6C3),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Enable Following',
+                              style: GoogleFonts.inter(
+                                fontSize: fs(13),
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF19213D),
+                              ),
+                            ),
+                          ),
+                          Switch(
+                            value: _spProfessionalProfileEnabled && _spFollowEnabled,
+                            onChanged: _spProfessionalProfileEnabled
+                                ? (value) {
+                                    setState(() {
+                                      _spFollowEnabled = value;
+                                    });
+                                  }
+                                : null,
+                            activeColor: Colors.white,
+                            activeTrackColor: const Color(0xFF02A6C3),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: w(10)),
                 _buildFormField(
                   'Vendor ID',
                   _spVendorIdController,
@@ -3700,6 +3996,9 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                       'workingSince': _spWorkingSinceController.text.trim(),
                     if (_spResponseTimeController.text.trim().isNotEmpty)
                       'responseTime': _spResponseTimeController.text.trim(),
+                    'isProfessionalProfileEnabled': _spProfessionalProfileEnabled,
+                    'isFollowEnabled':
+                        _spProfessionalProfileEnabled && _spFollowEnabled,
                     if (_spServiceType == 'DOCTOR' && _spDoctorIdController.text.trim().isNotEmpty)
                       'doctorId': _spDoctorIdController.text.trim(),
                     if (_spServiceType == 'DOCTOR' && _spExperienceYearsController.text.trim().isNotEmpty)
@@ -3924,6 +4223,39 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                             color: const Color(0xFF394452),
                           ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: w(10)),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: w(12), vertical: w(6)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(w(10)),
+                    border: Border.all(color: const Color(0xFFE3E7EE), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Enable Following',
+                          style: GoogleFonts.inter(
+                            fontSize: fs(13),
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF19213D),
+                          ),
+                        ),
+                      ),
+                      Switch(
+                        value: _bizFollowEnabled,
+                        onChanged: (value) {
+                          setState(() {
+                            _bizFollowEnabled = value;
+                          });
+                        },
+                        activeColor: Colors.white,
+                        activeTrackColor: const Color(0xFF02A6C3),
                       ),
                     ],
                   ),
@@ -4907,6 +5239,25 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                 ),
               ],
             ),
+          if (!isRealEstate && biz.media.isNotEmpty) ...[
+            SizedBox(height: w(8)),
+            SizedBox(
+              height: w(52),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: biz.media
+                    .map(
+                      (m) => _buildMediaThumb(
+                        fileUrl: m.fileUrl,
+                        mediaType: m.mediaType,
+                        size: w(52),
+                        onDelete: () => _deleteBusinessMedia(m.id),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -5009,6 +5360,25 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
               ),
             ],
           ),
+          if (amenity.media.isNotEmpty) ...[
+            SizedBox(height: w(8)),
+            SizedBox(
+              height: w(52),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: amenity.media
+                    .map(
+                      (m) => _buildMediaThumb(
+                        fileUrl: m.fileUrl,
+                        mediaType: m.mediaType,
+                        size: w(52),
+                        onDelete: () => _deleteAmenityMedia(m.id),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
         ],
       ),
     );
