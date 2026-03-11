@@ -179,6 +179,7 @@ const serviceProviderCreateSchema = Joi.object({
   serviceType: Joi.string().valid('LAUNDRY', 'PLUMBER', 'ELECTRICIAN', 'PAINTER', 'CARPENTER', 'BARBER', 'MAID', 'SALON', 'REAL_ESTATE', 'DOCTOR', 'WATER', 'GAS').required(),
   categoryId: Joi.string().uuid().allow(null),
   phone: Joi.string().allow('', null),
+  whatsapp: Joi.string().max(50).allow('', null),
   address: Joi.string().max(500).allow('', null),
   city: Joi.string().max(100).default('Lahore'),
   serviceCharge: Joi.number().min(0).allow(null),

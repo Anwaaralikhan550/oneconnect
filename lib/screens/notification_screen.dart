@@ -237,23 +237,24 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
           );
         }
 
+        if (displayList.isEmpty) {
+          return Center(
+            child: _buildEmptyState(),
+          );
+        }
+
         return Column(
           children: [
             SizedBox(height: _rs(context, 5)),
             _buildMarkAsReadSection(),
             SizedBox(height: _rs(context, 10)),
             _buildTabsWithNotifications(),
-            if (displayList.isEmpty) ...[
-              Expanded(
-                child: _buildEmptyState(),
-              ),
-            ] else ...[
-              SizedBox(height: _rs(context, 25)),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(bottom: _rs(context, 20)),
-                  child: Column(
-                    children: displayList.map((notification) {
+            SizedBox(height: _rs(context, 25)),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(bottom: _rs(context, 20)),
+                child: Column(
+                  children: displayList.map((notification) {
                       final timeAgo =
                           _formatTimeAgo(notification.createdAt);
                       final senderName = _notificationString(
@@ -295,7 +296,6 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
                   ),
                 ),
               ),
-            ],
           ],
         );
       },
@@ -358,13 +358,12 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        _rs(context, 14),
-        _rs(context, 12),
-        _rs(context, 14),
-        _rs(context, 18),
-      ),
-      child: Container(
+      padding: EdgeInsets.symmetric(horizontal: _rs(context, 14)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: _rs(context, 362),
+        ),
+        child: Container(
         width: double.infinity,
         padding: EdgeInsets.fromLTRB(
           _rs(context, 22),
@@ -377,6 +376,7 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
           borderRadius: BorderRadius.circular(_rs(context, 28)),
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
@@ -401,8 +401,10 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
               ),
             ),
             SizedBox(height: _rs(context, 22)),
-            Expanded(
-              child: Center(
+            Center(
+              child: SizedBox(
+                width: _rs(context, 170),
+                height: _rs(context, 170),
                 child: SvgPicture.asset(
                   'assets/images/notification_design_1.svg',
                   fit: BoxFit.contain,
@@ -465,6 +467,7 @@ class _NotificationScreenState extends State<NotificationScreen> with SingleTick
             ),
           ],
         ),
+      ),
       ),
     );
   }

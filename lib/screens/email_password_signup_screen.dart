@@ -25,6 +25,17 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
   bool _agreeToTerms = false;
   String? _phoneFromPreviousStep;
   bool _argsLoaded = false;
+  String? _fullNameError;
+  String? _emailError;
+  String? _passwordError;
+  String? _submitError;
+  bool _fullNameTouched = false;
+  bool _emailTouched = false;
+  bool _passwordTouched = false;
+
+  static final RegExp _emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+  static final RegExp _strongPasswordRegex =
+      RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{10,128}$');
 
   @override
   void initState() {
@@ -44,6 +55,9 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
         _isPasswordFocused = _passwordFocusNode.hasFocus;
       });
     });
+    _fullNameController.addListener(_handleFullNameChanged);
+    _emailController.addListener(_handleEmailChanged);
+    _passwordController.addListener(_handlePasswordChanged);
   }
 
   @override
@@ -62,6 +76,9 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
 
   @override
   void dispose() {
+    _fullNameController.removeListener(_handleFullNameChanged);
+    _emailController.removeListener(_handleEmailChanged);
+    _passwordController.removeListener(_handlePasswordChanged);
     _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -69,6 +86,33 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
+  }
+
+  void _handleFullNameChanged() {
+    if (!mounted) return;
+    setState(() {
+      _fullNameTouched = true;
+      _fullNameError = _validateFullName(_fullNameController.text);
+      _submitError = null;
+    });
+  }
+
+  void _handleEmailChanged() {
+    if (!mounted) return;
+    setState(() {
+      _emailTouched = true;
+      _emailError = _validateEmail(_emailController.text);
+      _submitError = null;
+    });
+  }
+
+  void _handlePasswordChanged() {
+    if (!mounted) return;
+    setState(() {
+      _passwordTouched = true;
+      _passwordError = _validatePassword(_passwordController.text);
+      _submitError = null;
+    });
   }
 
   @override
@@ -157,6 +201,7 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
                 label: 'Full Name',
                 placeholder: 'Enter your full name',
                 icon: Icons.person_outline,
+                errorText: _fullNameTouched ? _fullNameError : null,
                 helpText: 'Use only alphabets',
               ),
             ),
@@ -173,6 +218,7 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
                 label: 'Email',
                 placeholder: 'Enter your email address',
                 icon: Icons.email_outlined,
+                errorText: _emailTouched ? _emailError : null,
                 keyboardType: TextInputType.emailAddress,
               ),
             ),
@@ -308,6 +354,31 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
                 ),
               ),
             ),
+
+            if (_submitError != null) ...[
+              SizedBox(height: 12),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 25),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF2F2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE57373)),
+                  ),
+                  child: Text(
+                    _submitError!,
+                    style: const TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFB3261E),
+                    ),
+                  ),
+                ),
+              ),
+            ],
             
             SizedBox(height: 20),
             
@@ -357,9 +428,11 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
     required String label,
     required String placeholder,
     required IconData icon,
+    String? errorText,
     String? helpText,
     TextInputType? keyboardType,
   }) {
+    final hasError = errorText != null && errorText.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -383,11 +456,13 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isFocused 
-                  ? Color(0xFF6D758F) 
-                  : (controller.text.isNotEmpty 
-                      ? Color(0xFF6D758F) 
-                      : Color(0xFFC5CBDE)),
+              color: hasError
+                  ? const Color(0xFFE57373)
+                  : isFocused
+                      ? Color(0xFF6D758F)
+                      : (controller.text.isNotEmpty
+                          ? Color(0xFF6D758F)
+                          : Color(0xFFC5CBDE)),
               width: isFocused ? 1 : 0.5,
             ),
             boxShadow: [
@@ -446,9 +521,21 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
             ),
           ),
         ),
-        
-        // Help text
-        if (helpText != null) ...[ 
+
+        if (hasError) ...[
+          SizedBox(height: 6),
+          Text(
+            errorText,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFFB3261E),
+            ),
+          ),
+        ],
+
+        if (helpText != null && !hasError) ...[
           SizedBox(height: 4),
           Row(
             children: [
@@ -475,6 +562,8 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
   }
 
   Widget _buildPasswordField() {
+    final visiblePasswordError = _passwordTouched ? _passwordError : null;
+    final hasError = visiblePasswordError != null && visiblePasswordError.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -498,9 +587,11 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: _isPasswordFocused 
-                  ? Color(0xFF6D758F) 
-                  : Color(0xFFC5CBDE),
+              color: hasError
+                  ? const Color(0xFFE57373)
+                  : _isPasswordFocused
+                      ? Color(0xFF6D758F)
+                      : Color(0xFFC5CBDE),
               width: _isPasswordFocused ? 1 : 0.5,
             ),
             boxShadow: [
@@ -573,50 +664,60 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
             ),
           ),
         ),
-        
-        // Help text
-        SizedBox(height: 4),
-        Row(
-          children: [
-            Icon(
-              Icons.info_outline,
-              size: 14,
-              color: Color(0xFF6D758F),
+
+        if (hasError) ...[
+          SizedBox(height: 6),
+          Text(
+            visiblePasswordError!,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFFB3261E),
             ),
-            SizedBox(width: 4),
-            Text(
-              '8+ characters with numbers/symbols',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+          ),
+        ] else ...[
+          SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                size: 14,
                 color: Color(0xFF6D758F),
               ),
-            ),
-          ],
-        ),
+              SizedBox(width: 4),
+              Text(
+                '10+ chars with uppercase, lowercase, number and symbol',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF6D758F),
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
 
   void _handleSignup() async {
-    if (_fullNameController.text.isEmpty) {
-      _showSnackBar('Please enter your full name', Colors.red);
-      return;
-    }
+    final fullNameError = _validateFullName(_fullNameController.text);
+    final emailError = _validateEmail(_emailController.text);
+    final passwordError = _validatePassword(_passwordController.text);
 
-    if (_emailController.text.isEmpty) {
-      _showSnackBar('Please enter your email address', Colors.red);
-      return;
-    }
+    setState(() {
+      _fullNameTouched = true;
+      _emailTouched = true;
+      _passwordTouched = true;
+      _fullNameError = fullNameError;
+      _emailError = emailError;
+      _passwordError = passwordError;
+      _submitError = null;
+    });
 
-    if (_passwordController.text.isEmpty) {
-      _showSnackBar('Please enter your password', Colors.red);
-      return;
-    }
-
-    if (_passwordController.text.length < 8) {
-      _showSnackBar('Password must be at least 8 characters', Colors.red);
+    if (fullNameError != null || emailError != null || passwordError != null) {
       return;
     }
 
@@ -635,13 +736,42 @@ class _EmailPasswordSignupScreenState extends State<EmailPasswordSignupScreen> {
       Navigator.pushNamedAndRemoveUntil(context, '/main-screen-of-oneconnect', (route) => false);
     } else {
       final err = (authProvider.error ?? '').trim();
-      final msg = err.isEmpty
-          ? 'Signup failed'
-          : (err.toLowerCase().contains('already registered')
-              ? 'This email is already registered. Please login instead.'
-              : err);
-      _showSnackBar(msg, Colors.red);
+      setState(() {
+        _submitError = err.isEmpty
+            ? 'Signup failed. Please check your details and try again.'
+            : err;
+        if (_submitError!.toLowerCase().contains('email')) {
+          _emailError = _submitError;
+        }
+        if (_submitError!.toLowerCase().contains('password')) {
+          _passwordError = _submitError;
+        }
+      });
     }
+  }
+
+  String? _validateFullName(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return 'Please enter your full name.';
+    if (trimmed.length < 2) return 'Full name must be at least 2 characters.';
+    return null;
+  }
+
+  String? _validateEmail(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return 'Please enter your email address.';
+    if (!_emailRegex.hasMatch(trimmed)) {
+      return 'Please enter a valid email address.';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String value) {
+    if (value.isEmpty) return 'Please enter your password.';
+    if (!_strongPasswordRegex.hasMatch(value)) {
+      return 'Password must be 10+ chars with uppercase, lowercase, number and symbol.';
+    }
+    return null;
   }
 
   void _showSnackBar(String message, Color backgroundColor) {

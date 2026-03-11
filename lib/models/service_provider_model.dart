@@ -5,6 +5,7 @@ class ServiceProviderModel {
   final String id;
   final String name;
   final String? phone;
+  final String? whatsapp;
   final String serviceType;
   final double rating;
   final int reviewCount;
@@ -47,6 +48,7 @@ class ServiceProviderModel {
     required this.id,
     required this.name,
     this.phone,
+    this.whatsapp,
     required this.serviceType,
     this.rating = 0,
     this.reviewCount = 0,
@@ -99,6 +101,7 @@ class ServiceProviderModel {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       phone: json['phone'],
+      whatsapp: json['whatsapp'],
       serviceType: json['serviceType'] ?? '',
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       reviewCount: json['reviewCount'] ?? 0,
@@ -151,6 +154,7 @@ class ServiceProviderModel {
       id: id,
       name: name,
       phone: phone,
+      whatsapp: whatsapp,
       serviceType: serviceType,
       rating: rating ?? this.rating,
       reviewCount: reviewCount ?? this.reviewCount,

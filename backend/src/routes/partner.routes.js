@@ -2,7 +2,6 @@ const { Router } = require('express');
 const partnerController = require('../controllers/partner.controller');
 const { validate } = require('../middleware/validate');
 const { partnerAuthGuard } = require('../middleware/partnerAuth');
-const { authLimiter } = require('../middleware/rateLimiter');
 const {
   partnerRegisterSchema,
   partnerLoginSchema,
@@ -25,11 +24,11 @@ const {
 const router = Router();
 
 // Public
-router.post('/register', authLimiter, validate(partnerRegisterSchema), partnerController.register);
-router.post('/login', authLimiter, validate(partnerLoginSchema), partnerController.login);
+router.post('/register', validate(partnerRegisterSchema), partnerController.register);
+router.post('/login', validate(partnerLoginSchema), partnerController.login);
 router.post('/refresh', validate(partnerRefreshSchema), partnerController.refresh);
-router.post('/forgot-password', authLimiter, validate(partnerForgotPasswordSchema), partnerController.forgotPassword);
-router.post('/reset-password', authLimiter, validate(partnerResetPasswordSchema), partnerController.resetPassword);
+router.post('/forgot-password', validate(partnerForgotPasswordSchema), partnerController.forgotPassword);
+router.post('/reset-password', validate(partnerResetPasswordSchema), partnerController.resetPassword);
 router.post('/logout', partnerAuthGuard, validate(refreshSchema), partnerController.logout);
 
 // Protected

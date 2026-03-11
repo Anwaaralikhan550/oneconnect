@@ -267,6 +267,7 @@ model ServiceProvider {
   serviceType        ServiceType
   name               String
   phone              String?
+  whatsapp           String?
   rating             Float       @default(0)
   reviewCount        Int         @default(0)
   address            String?

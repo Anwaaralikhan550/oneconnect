@@ -107,8 +107,10 @@ class StickyFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final safeBottom = MediaQuery.of(context).viewPadding.bottom;
+
     return Container(
-      height: 96,
+      height: 96 + safeBottom,
       decoration: const BoxDecoration(
         color: Color(0xFFF5F6F7),
         borderRadius: BorderRadius.only(
@@ -117,7 +119,10 @@ class StickyFooter extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.only(top: 16, bottom: 12),
+        padding: EdgeInsets.only(
+          top: 16,
+          bottom: 12 + safeBottom,
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [

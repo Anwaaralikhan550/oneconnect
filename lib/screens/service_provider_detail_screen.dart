@@ -846,10 +846,13 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                     entityName: detail?.name,
                   ),
                 
-                if (_normalizeServiceType(detail?.serviceType ?? widget.serviceType) == 'doctor' &&
-                    _hasText(detail?.phone)) ...[
+                if (_hasText(detail?.phone) || _hasText(detail?.whatsapp)) ...[
                   SizedBox(height: rh(15)),
-                  _buildContactCard(context, detail!.phone!),
+                  _buildContactCard(
+                    context,
+                    phone: detail?.phone ?? '',
+                    whatsapp: detail?.whatsapp ?? '',
+                  ),
                 ],
 
                 SizedBox(height: rh(9)),
@@ -1344,8 +1347,14 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
     );
   }
 
-  Widget _buildContactCard(BuildContext context, String phone) {
-    final String whatsapp = phone; // Using same number for whatsapp
+  Widget _buildContactCard(
+    BuildContext context, {
+    required String phone,
+    required String whatsapp,
+  }) {
+    final String effectiveWhatsapp = whatsapp.trim().isNotEmpty
+        ? whatsapp.trim()
+        : phone.trim();
 
     return Container(
       margin: EdgeInsets.symmetric(horizontal: rw(15)),
@@ -1371,12 +1380,7 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
           Flexible(
             child: GestureDetector(
               onTap: () async {
-                if (phone.isNotEmpty) {
-                  final url = Uri.parse('tel:$phone');
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url);
-                  }
-                }
+                await callPhoneNumber(context, phone);
               },
               child: Row(
                 children: [
@@ -1389,7 +1393,7 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                   SizedBox(width: rw(5)),
                   Flexible(
                     child: Text(
-                      phone,
+                      phone.trim().isNotEmpty ? phone : 'No phone available',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
@@ -1409,7 +1413,7 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
           Flexible(
             child: GestureDetector(
               onTap: () async {
-                await openWhatsAppForNumber(context, whatsapp);
+                await openWhatsAppForNumber(context, effectiveWhatsapp);
               },
               child: Row(
                 children: [
@@ -1422,7 +1426,7 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                   SizedBox(width: rw(5)),
                   Flexible(
                     child: Text(
-                      'WhatsApp',
+                      effectiveWhatsapp.isNotEmpty ? effectiveWhatsapp : 'N/A',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(

@@ -457,7 +457,7 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
           ),
           child: Column(
             children: [
-              SizedBox(height: 35 * scale), // Status bar spacing
+              SizedBox(height: MediaQuery.of(context).padding.top + (8 * scale)),
               
               // Top Icon Row (Menu button and Notification/Settings)
               Padding(

@@ -73,6 +73,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   // Service Provider form state
   final TextEditingController _spNameController = TextEditingController();
   final TextEditingController _spPhoneController = TextEditingController();
+  final TextEditingController _spWhatsappController = TextEditingController();
   final TextEditingController _spAddressController = TextEditingController();
   final TextEditingController _spCityController = TextEditingController(text: 'Lahore');
   final TextEditingController _spChargeController = TextEditingController();
@@ -277,6 +278,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   void _clearServiceProviderForm() {
     _spNameController.clear();
     _spPhoneController.clear();
+    _spWhatsappController.clear();
     _spAddressController.clear();
     _spChargeController.clear();
     _spWorkingSinceController.clear();
@@ -305,6 +307,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   Future<void> _startEditServiceProvider(ServiceProviderModel sp) async {
     _spNameController.text = sp.name;
     _spPhoneController.text = sp.phone ?? '';
+    _spWhatsappController.text = sp.whatsapp ?? '';
     _spAddressController.text = sp.address ?? '';
     _spCityController.text = (sp.city?.trim().isNotEmpty ?? false) ? sp.city! : 'Lahore';
     _spChargeController.text = sp.serviceCharge?.toStringAsFixed(0) ?? '';
@@ -1614,6 +1617,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     _promotionDescriptionController.dispose();
     _spNameController.dispose();
     _spPhoneController.dispose();
+    _spWhatsappController.dispose();
     _spAddressController.dispose();
     _spCityController.dispose();
     _spChargeController.dispose();
@@ -3787,6 +3791,8 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                 SizedBox(height: w(10)),
                 _buildFormField('Phone', _spPhoneController, 'e.g. 0300-1234567', w, fs),
                 SizedBox(height: w(10)),
+                _buildFormField('WhatsApp', _spWhatsappController, 'e.g. +92-300-1234567', w, fs),
+                SizedBox(height: w(10)),
                 _buildFormField('Address', _spAddressController, 'e.g. DHA Phase 5, Lahore', w, fs),
                 SizedBox(height: w(10)),
                 // Service Type dropdown
@@ -4063,6 +4069,8 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                     if (_spSelectedSkills.isNotEmpty) 'skills': _spSelectedSkills,
                     if (_spImageUrl != null) 'imageUrl': _spImageUrl,
                     if (_spPhoneController.text.trim().isNotEmpty) 'phone': _spPhoneController.text.trim(),
+                    if (_spWhatsappController.text.trim().isNotEmpty)
+                      'whatsapp': _spWhatsappController.text.trim(),
                     if (_spAddressController.text.trim().isNotEmpty) 'address': _spAddressController.text.trim(),
                     'city': _spCityController.text.trim().isNotEmpty ? _spCityController.text.trim() : 'Lahore',
                     if (_spChargeController.text.trim().isNotEmpty)

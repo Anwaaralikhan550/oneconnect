@@ -8,15 +8,13 @@ class ProfileImagePicker {
   /// Shows a bottom sheet with Camera and Gallery options
   /// Returns the selected image file or null if cancelled
   static Future<File?> showImageSourceDialog(BuildContext context) async {
-    File? selectedImage;
-
-    await showModalBottomSheet<void>(
+    return showModalBottomSheet<File?>(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (BuildContext context) {
+      builder: (BuildContext sheetContext) {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
@@ -45,22 +43,16 @@ class ProfileImagePicker {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildOptionButton(
-                      context: context,
+                      context: sheetContext,
                       icon: Icons.camera_alt,
                       label: 'Camera',
-                      onTap: () async {
-                        Navigator.pop(context);
-                        selectedImage = await _pickImage(ImageSource.camera);
-                      },
+                      onTap: () => _pickAndClose(sheetContext, ImageSource.camera),
                     ),
                     _buildOptionButton(
-                      context: context,
+                      context: sheetContext,
                       icon: Icons.photo_library,
                       label: 'Gallery',
-                      onTap: () async {
-                        Navigator.pop(context);
-                        selectedImage = await _pickImage(ImageSource.gallery);
-                      },
+                      onTap: () => _pickAndClose(sheetContext, ImageSource.gallery),
                     ),
                   ],
                 ),
@@ -71,11 +63,15 @@ class ProfileImagePicker {
         );
       },
     );
+  }
 
-    // Wait a bit for the bottom sheet to close and image to be picked
-    await Future.delayed(const Duration(milliseconds: 100));
-
-    return selectedImage;
+  static Future<void> _pickAndClose(
+    BuildContext context,
+    ImageSource source,
+  ) async {
+    final image = await _pickImage(source);
+    if (!context.mounted) return;
+    Navigator.of(context).pop(image);
   }
 
   static Widget _buildOptionButton({

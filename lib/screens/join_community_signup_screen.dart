@@ -103,20 +103,24 @@ class _JoinCommunitySignupScreenState extends State<JoinCommunitySignupScreen> {
       return;
     }
 
-    try {
-      final success = await Provider.of<AuthProvider>(context, listen: false).register(
-        name: _fullNameController.text.trim(),
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.register(
+      name: _fullNameController.text.trim(),
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      _showSnackBar('Signup successful!', Colors.green);
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      final error = (authProvider.error ?? '').trim();
+      _showSnackBar(
+        error.isEmpty ? 'Signup failed. Please try again.' : error,
+        Colors.red,
       );
-      if (mounted && success) {
-        _showSnackBar('Signup successful!', Colors.green);
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackBar(e.toString(), Colors.red);
-      }
     }
   }
 

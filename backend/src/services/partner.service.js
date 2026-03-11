@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const { Prisma } = require('@prisma/client');
 const { prisma } = require('../config/database');
 const { env } = require('../config/env');
 const { AppError } = require('../middleware/errorHandler');
@@ -22,6 +23,18 @@ const SERVICE_TYPE_TO_SLUG = {
   WATER: 'water',
   GAS: 'gas',
 };
+
+const SERVICE_PROVIDER_HAS_WHATSAPP = Boolean(
+  Prisma?.dmmf?.datamodel?.models
+    ?.find((m) => m.name === 'ServiceProvider')
+    ?.fields?.some((f) => f.name === 'whatsapp')
+);
+
+function sanitizeServiceProviderPayloadForClient(data) {
+  if (SERVICE_PROVIDER_HAS_WHATSAPP) return data;
+  const { whatsapp: _ignoredWhatsapp, ...rest } = data;
+  return rest;
+}
 
 function toTitleCase(value) {
   return value
@@ -631,9 +644,10 @@ async function getServiceProviders(partnerId) {
 
 async function createServiceProvider(partnerId, data) {
   const { skills, categoryId, vendorId: _ignoredVendorId, ...rest } = data;
+  const safeRest = sanitizeServiceProviderPayloadForClient(rest);
   let resolvedCategoryId = categoryId;
   if (!resolvedCategoryId) {
-    resolvedCategoryId = await resolveServiceCategoryId(rest.serviceType);
+    resolvedCategoryId = await resolveServiceCategoryId(safeRest.serviceType);
   }
   if (!resolvedCategoryId) {
     const fallbackCategory = await prisma.serviceCategory.findFirst({
@@ -646,15 +660,16 @@ async function createServiceProvider(partnerId, data) {
     throw new AppError('Unable to resolve category for selected service type', 400);
   }
 
-  const normalizedSkills = buildSpecializations(rest.serviceType, skills);
+  const normalizedSkills = buildSpecializations(safeRest.serviceType, skills);
   const autoVendorId = await generateUniqueVendorId();
 
   return prisma.serviceProvider.create({
     data: {
-      ...rest,
-      isProfessionalProfileEnabled: Boolean(rest.isProfessionalProfileEnabled),
+      ...safeRest,
+      isProfessionalProfileEnabled: Boolean(safeRest.isProfessionalProfileEnabled),
       isFollowEnabled:
-        Boolean(rest.isProfessionalProfileEnabled) && Boolean(rest.isFollowEnabled),
+        Boolean(safeRest.isProfessionalProfileEnabled) &&
+        Boolean(safeRest.isFollowEnabled),
       categoryId: resolvedCategoryId,
       partnerId,
       vendorId: autoVendorId,
@@ -668,6 +683,7 @@ async function createServiceProvider(partnerId, data) {
 
 async function updateServiceProvider(partnerId, id, data) {
   const { skills, categoryId, vendorId: _ignoredVendorId, ...rest } = data;
+  const safeRest = sanitizeServiceProviderPayloadForClient(rest);
   const sp = await prisma.serviceProvider.findFirst({
     where: { id, partnerId },
   });
@@ -675,24 +691,29 @@ async function updateServiceProvider(partnerId, id, data) {
 
   return prisma.$transaction(async (tx) => {
     const updateData = {
-      ...rest,
-      ...(Object.prototype.hasOwnProperty.call(rest, 'isProfessionalProfileEnabled')
+      ...safeRest,
+      ...(Object.prototype.hasOwnProperty.call(safeRest, 'isProfessionalProfileEnabled')
         ? {
-            isProfessionalProfileEnabled: Boolean(rest.isProfessionalProfileEnabled),
+            isProfessionalProfileEnabled: Boolean(
+              safeRest.isProfessionalProfileEnabled
+            ),
           }
         : {}),
-      ...(Object.prototype.hasOwnProperty.call(rest, 'isFollowEnabled') ||
-      Object.prototype.hasOwnProperty.call(rest, 'isProfessionalProfileEnabled')
+      ...(Object.prototype.hasOwnProperty.call(safeRest, 'isFollowEnabled') ||
+      Object.prototype.hasOwnProperty.call(safeRest, 'isProfessionalProfileEnabled')
         ? {
             isFollowEnabled:
               Boolean(
-                Object.prototype.hasOwnProperty.call(rest, 'isProfessionalProfileEnabled')
-                  ? rest.isProfessionalProfileEnabled
+                Object.prototype.hasOwnProperty.call(
+                  safeRest,
+                  'isProfessionalProfileEnabled'
+                )
+                  ? safeRest.isProfessionalProfileEnabled
                   : sp.isProfessionalProfileEnabled,
               ) &&
               Boolean(
-                Object.prototype.hasOwnProperty.call(rest, 'isFollowEnabled')
-                  ? rest.isFollowEnabled
+                Object.prototype.hasOwnProperty.call(safeRest, 'isFollowEnabled')
+                  ? safeRest.isFollowEnabled
                   : sp.isFollowEnabled,
               ),
           }
@@ -705,16 +726,18 @@ async function updateServiceProvider(partnerId, id, data) {
     }
     if (categoryId) {
       updateData.categoryId = categoryId;
-    } else if (rest.serviceType) {
-      const resolvedCategoryId = await resolveServiceCategoryId(rest.serviceType);
+    } else if (safeRest.serviceType) {
+      const resolvedCategoryId = await resolveServiceCategoryId(
+        safeRest.serviceType
+      );
       if (resolvedCategoryId) {
         updateData.categoryId = resolvedCategoryId;
       }
     }
 
-    if (skills || rest.serviceType) {
+    if (skills || safeRest.serviceType) {
       const normalizedSkills = buildSpecializations(
-        rest.serviceType || sp.serviceType,
+        safeRest.serviceType || sp.serviceType,
         skills
       );
       await tx.serviceProviderSkill.deleteMany({ where: { serviceProviderId: id } });

@@ -27,6 +27,29 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
   bool get isPartner => _isPartner;
 
+  String _normalizeAuthError(String? rawMessage) {
+    final message = (rawMessage ?? '').trim();
+    if (message.isEmpty) {
+      return 'Unable to register right now. Please check your connection and try again.';
+    }
+
+    final lower = message.toLowerCase();
+    if (lower.contains('already registered') || lower.contains('already exists')) {
+      return 'This email is already registered. Please login instead.';
+    }
+    if (lower.contains('password must be')) {
+      return 'Password must be at least 10 characters and include uppercase, lowercase, number, and special character.';
+    }
+    if (lower.contains('email') && (lower.contains('valid') || lower.contains('must be'))) {
+      return 'Please enter a valid email address.';
+    }
+    if (lower.contains('"name"') || lower == 'name is required') {
+      return 'Please enter your full name.';
+    }
+
+    return message;
+  }
+
   Future<void> checkAuthState() async {
     _isLoggedIn = await TokenStorage.isLoggedIn();
     _isPartner = await TokenStorage.isPartner();
@@ -79,7 +102,7 @@ class AuthProvider extends ChangeNotifier {
       _pushTokenService.registerCurrentDeviceToken();
       return true;
     } on ApiException catch (e) {
-      _error = e.message;
+      _error = _normalizeAuthError(e.message);
       _isLoading = false;
       notifyListeners();
       return false;

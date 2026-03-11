@@ -11,7 +11,7 @@
     "db:seed": "npx prisma db seed",
     "db:studio": "npx prisma studio",
     "db:reset": "npx prisma migrate reset --force",
-    "prisma:generate": "npx prisma generate",
+    "prisma:generate": "node scripts/prisma-generate.js",
     "test": "jest --runInBand --detectOpenHandles",
     "test:coverage": "jest --runInBand --detectOpenHandles --coverage",
     "test:watch": "jest --watch",
