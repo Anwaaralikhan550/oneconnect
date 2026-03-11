@@ -3,9 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// A standardized "Photos and Videos" section used across all detail screens.
 ///
-/// Displays a small-large-small (75-150-75) photo layout with 3 teal dot
-/// indicators. Supports a PageView carousel when more than 3 images are
-/// provided.
+/// Displays a centered large image with smaller left/right previews.
 class PhotosAndVideosSection extends StatefulWidget {
   final List<String> imageUrls;
   final double designWidth;
@@ -23,8 +21,15 @@ class PhotosAndVideosSection extends StatefulWidget {
 }
 
 class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
+  static const double _centerCardW = 150;
+  static const double _sideCardW = 75;
+  static const double _cardH = 165;
+  static const double _cardRadius = 20;
+  static const double _designViewportFraction = 137.5 / 390; // 75-150-75 with ~25 gap
+
   int _currentPage = 0;
-  late PageController _pageController;
+  late final PageController _pageController;
+  double _pageOffset = 0;
 
   double _w(double v) =>
       (v / widget.designWidth) * MediaQuery.of(context).size.width;
@@ -33,21 +38,16 @@ class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
   double _fs(double v) =>
       (v / widget.designWidth) * MediaQuery.of(context).size.width;
 
-  /// Split imageUrls into pages of 3.
-  List<List<String>> get _pages {
-    final urls = widget.imageUrls;
-    if (urls.isEmpty) return [[]]; // single page with placeholders
-    final pages = <List<String>>[];
-    for (var i = 0; i < urls.length; i += 3) {
-      pages.add(urls.sublist(i, (i + 3).clamp(0, urls.length)));
-    }
-    return pages;
-  }
-
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(viewportFraction: _designViewportFraction);
+    _pageController.addListener(() {
+      if (!mounted) return;
+      setState(() {
+        _pageOffset = _pageController.page ?? _currentPage.toDouble();
+      });
+    });
   }
 
   @override
@@ -58,20 +58,16 @@ class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
 
   @override
   Widget build(BuildContext context) {
-    final pages = _pages;
-    final pageCount = pages.length;
+    final imageUrls = widget.imageUrls;
+    final itemCount = imageUrls.isEmpty ? 1 : imageUrls.length;
 
-    // Determine which dot is active:
-    // - With 1 page: middle dot (index 1) is active
-    // - With multiple pages: dot index maps to page index (0, 1, 2)
-    final activeDot = pageCount <= 1 ? 1 : _currentPage.clamp(0, 2);
+    final activeDot = itemCount <= 1 ? 1 : (_currentPage % 3);
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: _h(10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Header
           Padding(
             padding: EdgeInsets.symmetric(horizontal: _w(20)),
             child: Text(
@@ -86,25 +82,40 @@ class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
             ),
           ),
           SizedBox(height: _h(15)),
-
-          // Photo Row (PageView carousel)
           SizedBox(
-            height: _h(150),
-            child: pageCount <= 1
-                ? _buildPhotoRow(pages.first)
+            height: _h(_cardH),
+            child: imageUrls.isEmpty
+                ? Center(
+                    child: _buildPhotoFrame(
+                      _w(_centerCardW),
+                      _h(_cardH),
+                      null,
+                    ),
+                  )
                 : PageView.builder(
                     controller: _pageController,
-                    itemCount: pageCount,
+                    itemCount: imageUrls.length,
                     onPageChanged: (index) {
                       setState(() => _currentPage = index);
                     },
-                    itemBuilder: (context, index) =>
-                        _buildPhotoRow(pages[index]),
+                    itemBuilder: (context, index) {
+                      final distance = (_pageOffset - index).abs().clamp(0.0, 1.0);
+                      final width =
+                          _w(_centerCardW) - ((_w(_centerCardW) - _w(_sideCardW)) * distance);
+
+                      return Center(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 140),
+                          curve: Curves.easeOut,
+                          width: width,
+                          height: _h(_cardH),
+                          child: _buildPhotoFrame(width, _h(_cardH), imageUrls[index]),
+                        ),
+                      );
+                    },
                   ),
           ),
           SizedBox(height: _h(20)),
-
-          // Dot Indicators
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -120,29 +131,12 @@ class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
     );
   }
 
-  /// Builds the small-large-small photo row for a single page of up to 3 URLs.
-  Widget _buildPhotoRow(List<String> urls) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildPhotoFrame(_w(75), _h(150), urls.isNotEmpty ? urls[0] : null),
-        SizedBox(width: _w(25)),
-        _buildPhotoFrame(
-            _w(150), _h(150), urls.length > 1 ? urls[1] : (urls.isNotEmpty ? urls[0] : null)),
-        SizedBox(width: _w(25)),
-        _buildPhotoFrame(
-            _w(75), _h(150), urls.length > 2 ? urls[2] : (urls.isNotEmpty ? urls[0] : null)),
-      ],
-    );
-  }
-
-  /// A single rounded photo container with shadow and error fallback.
   Widget _buildPhotoFrame(double width, double height, String? url) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(_w(_cardRadius)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.10),
@@ -152,7 +146,7 @@ class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(_w(_cardRadius)),
         child: url != null && url.isNotEmpty
             ? Image.network(
                 url,
@@ -160,31 +154,29 @@ class _PhotosAndVideosSectionState extends State<PhotosAndVideosSection> {
                 errorBuilder: (c, e, s) => Container(
                   color: Colors.grey[300],
                   child: Center(
-                      child: Icon(Icons.photo, color: Colors.grey[400])),
+                    child: Icon(Icons.photo, color: Colors.grey[400]),
+                  ),
                 ),
               )
             : Container(
                 color: Colors.grey[300],
                 child: Center(
-                    child: Icon(Icons.photo, color: Colors.grey[400])),
+                  child: Icon(Icons.photo, color: Colors.grey[400]),
+                ),
               ),
       ),
     );
   }
 
-  /// A single dot indicator.
   Widget _buildDot(int dotIndex, int activeDot) {
     final isActive = dotIndex == activeDot;
     return Container(
       width: dotIndex == 1 ? _w(50) : _w(20),
       height: _h(12),
       decoration: BoxDecoration(
-        color: isActive
-            ? const Color(0xFF3195AB)
-            : const Color(0xFF3DCED5),
+        color: isActive ? const Color(0xFF3195AB) : const Color(0xFF3DCED5),
         borderRadius: BorderRadius.circular(20),
       ),
     );
   }
 }
-
