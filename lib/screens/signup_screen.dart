@@ -187,7 +187,7 @@ class SignupScreen extends StatelessWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(context, '/member-signup');
+                                  Navigator.pushNamed(context, '/login');
                                 },
                                 borderRadius: BorderRadius.circular(8 * scale),
                                 child: Row(

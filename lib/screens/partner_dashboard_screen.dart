@@ -39,9 +39,10 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   bool _followUs = false;
   String? _selectedCategory;
   String? _dashboardCategory;
-  static const String _catServices = 'Services';
-  static const String _catBusinesses = 'Businesses';
-  static const String _catAmenities = 'Amenities';
+  String? _profileDashboardCategory;
+  static const String _catServices = 'Service';
+  static const String _catBusinesses = 'Business';
+  static const String _catAmenities = 'Amenity';
   final bool _promotionsEnabled = false;
   bool _profileSynced = false;
   bool _expandBusinessTimings = true;
@@ -351,14 +352,49 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     if (partner.phones.isNotEmpty) {
       _phoneController.text = partner.phones.first.phoneNumber;
     }
+    final mapped = _mapBusinessTypeToDashboardCategory(partner.businessType);
+    if (mapped != null) {
+      _profileDashboardCategory = mapped;
+      _dashboardCategory = mapped;
+      _selectedCategory = mapped;
+    }
+  }
+
+  String? _mapBusinessTypeToDashboardCategory(String? businessType) {
+    final type = (businessType ?? '').trim().toUpperCase();
+    switch (type) {
+      case 'SERVICE_PROVIDER':
+        return _catServices;
+      case 'RETAIL_STORE':
+      case 'RESTAURANT':
+      case 'ONLINE_BUSINESS':
+        return _catBusinesses;
+      case 'OTHER':
+        return _catAmenities;
+      default:
+        return null;
+    }
   }
 
   void _setDashboardCategory(String? category) {
+    final lockedCategory = _profileDashboardCategory;
+    if (lockedCategory != null && category != null && category != lockedCategory) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Dashboard category is fixed to "$lockedCategory" from signup business type.',
+          ),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    final effectiveCategory = lockedCategory ?? category;
     setState(() {
-      _dashboardCategory = category;
-      _selectedCategory = category;
+      _dashboardCategory = effectiveCategory;
+      _selectedCategory = effectiveCategory;
     });
-    if (category == _catServices && _serviceCategories.isEmpty) {
+    if (effectiveCategory == _catServices && _serviceCategories.isEmpty) {
       _loadServiceCategories();
     }
   }
@@ -1988,11 +2024,27 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
   }
 
   Widget _buildCategorySelectionCard(BuildContext context, double scale) {
+    final lockedCategory = _profileDashboardCategory;
+    final isCategoryLocked = lockedCategory != null;
+
     Widget categoryTile(String label, IconData icon) {
       final isSelected = _dashboardCategory == label;
       return Expanded(
         child: GestureDetector(
-          onTap: () => _setDashboardCategory(label),
+          onTap: () {
+            if (isCategoryLocked && label != lockedCategory) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Category locked to "$lockedCategory" based on signup business type.',
+                  ),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+              return;
+            }
+            _setDashboardCategory(label);
+          },
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 12 * scale),
             decoration: BoxDecoration(
@@ -2065,6 +2117,26 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
             ),
           ),
           SizedBox(height: 12 * scale),
+          if (isCategoryLocked) ...[
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 10 * scale, vertical: 8 * scale),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF7FA),
+                borderRadius: BorderRadius.circular(8 * scale),
+                border: Border.all(color: const Color(0xFF0097B2).withOpacity(0.3)),
+              ),
+              child: Text(
+                'Category fixed from signup: $lockedCategory',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12 * scale,
+                  color: const Color(0xFF19213D),
+                ),
+              ),
+            ),
+            SizedBox(height: 12 * scale),
+          ],
           Row(
             children: [
               categoryTile(_catServices, Icons.medical_services_outlined),
@@ -2087,24 +2159,25 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                   ),
                 ),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () => _setDashboardCategory(null),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 6 * scale),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF696969),
-                      borderRadius: BorderRadius.circular(6 * scale),
-                    ),
-                    child: Text(
-                      'Change',
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 12 * scale,
-                        color: Colors.white,
+                if (!isCategoryLocked)
+                  GestureDetector(
+                    onTap: () => _setDashboardCategory(null),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12 * scale, vertical: 6 * scale),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF696969),
+                        borderRadius: BorderRadius.circular(6 * scale),
+                      ),
+                      child: Text(
+                        'Change',
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12 * scale,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ],

@@ -17,14 +17,12 @@ class _SplashAnimationScreenState extends State<SplashAnimationScreen>
   late AnimationController _wave2Controller; // Right to left, rising from bottom
   late AnimationController _wave3Controller; // Left to right, rising from bottom
   late AnimationController _fillController;  // Bottom to top filling
-  late AnimationController _logoController;  // Logo appearance
 
   // Wave Animations
   late Animation<double> _wave1Animation;
   late Animation<double> _wave2Animation;
   late Animation<double> _wave3Animation;
   late Animation<double> _fillAnimation;
-  late Animation<double> _logoOpacityAnimation;
 
   @override
   void initState() {
@@ -55,12 +53,6 @@ class _SplashAnimationScreenState extends State<SplashAnimationScreen>
     // Bottom to top filling controller
     _fillController = AnimationController(
       duration: const Duration(milliseconds: 4000), // 4 seconds to fill from bottom to top
-      vsync: this,
-    );
-
-    // Logo appearance controller - gradual fade-in with waves
-    _logoController = AnimationController(
-      duration: const Duration(milliseconds: 4000), // 4 seconds gradual fade-in
       vsync: this,
     );
 
@@ -100,14 +92,6 @@ class _SplashAnimationScreenState extends State<SplashAnimationScreen>
       curve: Curves.easeInOut,
     ));
 
-    // Logo opacity animation - gradual fade-in over 4 seconds
-    _logoOpacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _logoController,
-      curve: Curves.easeInOut, // Smooth gradual fade-in
-    ));
   }
 
   void _startAnimationSequence() async {
@@ -120,11 +104,10 @@ class _SplashAnimationScreenState extends State<SplashAnimationScreen>
     await Future.delayed(const Duration(milliseconds: 400));
     _wave3Controller.repeat(); // Third wave for depth
 
-    // Start bottom-to-top filling and logo fade-in simultaneously
+    // Start bottom-to-top filling
     _fillController.forward();
-    _logoController.forward(); // Start logo fade-in immediately with waves
 
-    // Wait exactly 4 seconds for both animations to complete
+    // Wait exactly 4 seconds for animation to complete
     await Future.delayed(const Duration(milliseconds: 4000));
 
     if (mounted) {
@@ -158,7 +141,6 @@ class _SplashAnimationScreenState extends State<SplashAnimationScreen>
     _wave2Controller.dispose();
     _wave3Controller.dispose();
     _fillController.dispose();
-    _logoController.dispose();
     super.dispose();
   }
 
@@ -213,36 +195,6 @@ class _SplashAnimationScreenState extends State<SplashAnimationScreen>
                     );
                   },
                 ),
-              ),
-            ),
-
-            // OneConnect Logo - appears after waves fill
-            Center(
-              child: AnimatedBuilder(
-                animation: _logoController,
-                builder: (context, child) {
-                  return Opacity(
-                    opacity: _logoOpacityAnimation.value,
-                    child: Container(
-                      width: 240,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color.fromRGBO(0, 0, 0, 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                            spreadRadius: 0,
-                          ),
-                        ],
-                      ),
-                      child: Image.asset(
-                        'assets/images/splash/oneconnect_logo_full.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  );
-                },
               ),
             ),
 

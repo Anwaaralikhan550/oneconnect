@@ -86,47 +86,37 @@ class CustomTextField extends StatelessWidget {
             fillColor: fillColor ?? (isFilled ? const Color(0xFFF8F9FA) : Colors.white),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * scale),
-              borderSide: BorderSide(
-                color: errorText != null
-                    ? Colors.red
-                    : focusNode.hasFocus
-                        ? Colors.green
-                        : const Color(0xFFE0E0E0),
-                width: errorText != null
-                    ? 2.5
-                    : focusNode.hasFocus
-                        ? 2.5
-                        : 1,
+              borderSide: const BorderSide(
+                color: _PartnerStep2ScreenState._fieldBorderDarkGrey,
+                width: 1.5,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * scale),
-              borderSide: BorderSide(
-                color: errorText != null
-                    ? Colors.red
-                    : const Color(0xFFE0E0E0),
-                width: errorText != null ? 2.5 : 1,
+              borderSide: const BorderSide(
+                color: _PartnerStep2ScreenState._fieldBorderDarkGrey,
+                width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * scale),
-              borderSide: BorderSide(
-                color: errorText != null ? Colors.red : Colors.green,
-                width: 2.5,
+              borderSide: const BorderSide(
+                color: _PartnerStep2ScreenState._fieldBorderDarkGrey,
+                width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * scale),
               borderSide: const BorderSide(
-                color: Colors.red,
-                width: 2.5,
+                color: _PartnerStep2ScreenState._fieldBorderDarkGrey,
+                width: 1.5,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8 * scale),
               borderSide: const BorderSide(
-                color: Colors.red,
-                width: 2.5,
+                color: _PartnerStep2ScreenState._fieldBorderDarkGrey,
+                width: 1.5,
               ),
             ),
             errorStyle: const TextStyle(height: 0, fontSize: 0),
@@ -164,6 +154,7 @@ class PartnerStep2Screen extends StatefulWidget {
 }
 
 class _PartnerStep2ScreenState extends State<PartnerStep2Screen> {
+  static const Color _fieldBorderDarkGrey = Color(0xFF696969);
   final _formKey = GlobalKey<FormState>();
   final _businessNameController = TextEditingController();
   final _fullNameController = TextEditingController();
@@ -491,9 +482,9 @@ class _PartnerStep2ScreenState extends State<PartnerStep2Screen> {
                                 if (_formKey.currentState!.validate()) {
                                   // Map display names to backend BusinessType enum values
                                   const typeMap = {
-                                    'Services': 'SERVICE_PROVIDER',
+                                    'Service': 'SERVICE_PROVIDER',
                                     'Business': 'RETAIL_STORE',
-                                    'Amenities': 'OTHER',
+                                    'Amenity': 'OTHER',
                                   };
                                   Navigator.pushNamed(
                                     context,
@@ -707,23 +698,23 @@ class _PartnerStep2ScreenState extends State<PartnerStep2Screen> {
               fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8 * scale),
-                borderSide: BorderSide(
-                  color: focusNode.hasFocus ? Colors.green : const Color(0xFFE0E0E0),
-                  width: focusNode.hasFocus ? 2.5 : 1,
+                borderSide: const BorderSide(
+                  color: _fieldBorderDarkGrey,
+                  width: 1.5,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8 * scale),
                 borderSide: const BorderSide(
-                  color: Color(0xFFE0E0E0),
-                  width: 1,
+                  color: _fieldBorderDarkGrey,
+                  width: 1.5,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8 * scale),
                 borderSide: const BorderSide(
-                  color: Colors.green,
-                  width: 2.5,
+                  color: _fieldBorderDarkGrey,
+                  width: 1.5,
                 ),
               ),
               contentPadding: EdgeInsets.symmetric(
@@ -732,9 +723,9 @@ class _PartnerStep2ScreenState extends State<PartnerStep2Screen> {
               ),
             ),
             items: [
-              'Services',
+              'Service',
               'Business',
-              'Amenities',
+              'Amenity',
             ].map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
@@ -800,16 +791,8 @@ class _PartnerStep2ScreenState extends State<PartnerStep2Screen> {
               color: const Color(0xFFF8F9FA),
               borderRadius: BorderRadius.circular(8 * scale),
               border: Border.all(
-                color: _fieldErrors[fieldKey] != null
-                    ? Colors.red
-                    : _isPhoneFocused
-                        ? Colors.green
-                        : const Color(0xFFE0E0E0),
-                width: _fieldErrors[fieldKey] != null
-                    ? 2.5
-                    : _isPhoneFocused
-                        ? 2.5
-                        : 1,
+                color: _fieldBorderDarkGrey,
+                width: 1.5,
               ),
             ),
             child: Padding(

@@ -10,6 +10,7 @@ class PartnerStep5Screen extends StatefulWidget {
 }
 
 class _PartnerStep5ScreenState extends State<PartnerStep5Screen> {
+  static const Color _fieldBorderDarkGrey = Color(0xFF696969);
   final _formKey = GlobalKey<FormState>();
   final _addressController = TextEditingController();
   final LocationService _locationService = LocationService();
@@ -237,8 +238,8 @@ class _PartnerStep5ScreenState extends State<PartnerStep5Screen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFFFF),
                         border: Border.all(
-                          color: const Color(0xFFE0E0E0),
-                          width: 1,
+                          color: _fieldBorderDarkGrey,
+                          width: 1.5,
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -279,8 +280,8 @@ class _PartnerStep5ScreenState extends State<PartnerStep5Screen> {
                               color: const Color(0xFFFFFFFF),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: const Color(0xFFE0E0E0),
-                                width: 1,
+                                color: _fieldBorderDarkGrey,
+                                width: 1.5,
                               ),
                             ),
                             child: TextFormField(
@@ -452,9 +453,7 @@ class _PartnerStep5ScreenState extends State<PartnerStep5Screen> {
     bool isFocused = false,
     bool showLeftIcons = false,
   }) {
-    Color borderColor = const Color(0xFFE0E0E0);
-    if (isError) borderColor = const Color(0xFFE53E3E);
-    if (isFocused) borderColor = const Color(0xFF3499AF);
+    const Color borderColor = _fieldBorderDarkGrey;
 
     return Container(
       margin: EdgeInsets.only(bottom: bottomMargin),
@@ -483,7 +482,7 @@ class _PartnerStep5ScreenState extends State<PartnerStep5Screen> {
               color: const Color(0xFFFFFFFF),
               border: Border.all(
                 color: borderColor,
-                width: isFocused ? 2 : 1,
+                width: 1.5,
               ),
               borderRadius: BorderRadius.circular(12),
             ),
