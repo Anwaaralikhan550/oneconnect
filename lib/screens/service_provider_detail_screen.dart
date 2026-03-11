@@ -16,7 +16,6 @@ import '../models/review_model.dart';
 import '../utils/contact_utils.dart';
 import '../widgets/give_review_dialog.dart';
 import '../widgets/photos_and_videos_section.dart';
-import '../widgets/partner_media_gallery.dart';
 import '../widgets/profile_image.dart';
 import '../widgets/location_section.dart';
 import '../mixins/responsive_mixin.dart';
@@ -373,15 +372,10 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
     final providerMedia = widget.providerId != null
         ? provider.getProviderMedia(widget.providerId!)
         : const <MediaItem>[];
-    final mediaItems = (providerMedia.isNotEmpty ? providerMedia : (detail?.media ?? const <MediaItem>[]))
-        .map((m) => PartnerGalleryItem(
-              id: m.id,
-              mediaType: m.mediaType,
-              fileUrl: m.fileUrl,
-            ))
-        .toList();
-    final photosAndVideosUrls = mediaItems
-        .map((m) => m.fileUrl)
+    final List<String> photosAndVideosUrls = (providerMedia.isNotEmpty
+            ? providerMedia
+            : (detail?.media ?? const <MediaItem>[]))
+        .map<String>((m) => m.fileUrl.toString())
         .where((url) => url.trim().isNotEmpty)
         .toList();
 
@@ -1068,12 +1062,6 @@ class _ServiceProviderDetailScreenState extends State<ServiceProviderDetailScree
                       ],
                     ),
                   ),
-                  PartnerMediaGallery(
-                    title: 'Partner Media',
-                    items: mediaItems,
-                    hideWhenEmpty: true,
-                  ),
-                  
                   SizedBox(height: rw(20)),
                     ],
                   ),

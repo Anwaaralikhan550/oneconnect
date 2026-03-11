@@ -12,7 +12,6 @@ import '../models/filter_dto.dart';
 import '../widgets/sticky_footer.dart';
 import '../utils/profile_image_picker.dart';
 import '../widgets/figma_filter_sheet.dart';
-import '../widgets/partner_media_gallery.dart';
 import '../widgets/profile_image.dart';
 import 'service_provider_detail_screen.dart';
 
@@ -1235,21 +1234,6 @@ class _ServicesHubScreenState extends State<ServicesHubScreen> {
                 ),
               ),
             ),
-          ),
-          Consumer<ServiceProviderProvider>(
-            builder: (context, spProvider, _) {
-              final providers = _getProvidersForSelectedCategory(spProvider);
-              final mediaItems = providers
-                  .where((p) => (p.imageUrl ?? '').isNotEmpty)
-                  .take(10)
-                  .map((p) => PartnerGalleryItem(
-                        id: p.id,
-                        mediaType: 'PHOTO',
-                        fileUrl: p.imageUrl!,
-                      ))
-                  .toList();
-              return PartnerMediaGallery(items: mediaItems, hideWhenEmpty: true);
-            },
           ),
         ],
       ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../models/review_model.dart';
-import 'partner_media_gallery.dart';
+import 'partner_media_gallery.dart' show PartnerGalleryItem;
 import '../screens/review_media_center_screen.dart';
 import '../utils/media_url.dart';
 
@@ -114,12 +114,7 @@ class _MemberReviewsSectionState extends State<MemberReviewsSection> {
                 ),
               ),
             ),
-          PartnerMediaGallery(
-            title: 'Partner Media',
-            items: widget.mediaItems,
-            hideWhenEmpty: true,
-          ),
-          if ((widget.reviews.isNotEmpty || widget.mediaItems.isNotEmpty))
+          if (widget.reviews.isNotEmpty)
             Padding(
               padding: EdgeInsets.only(top: rh(6), left: rw(20), right: rw(20)),
               child: Align(
@@ -132,13 +127,13 @@ class _MemberReviewsSectionState extends State<MemberReviewsSection> {
                         builder: (_) => ReviewMediaCenterScreen(
                           title: widget.sectionTitle,
                           reviews: widget.reviews,
-                          mediaItems: widget.mediaItems,
+                          mediaItems: const [],
                           initialTabIndex: 0,
                         ),
                       ),
                     );
                   },
-                  child: const Text('See all reviews & media'),
+                  child: const Text('See all reviews'),
                 ),
               ),
             ),

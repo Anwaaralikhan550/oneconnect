@@ -1670,11 +1670,8 @@ class _MainScreenOfOneConnectState extends State<MainScreenOfOneConnect>
         return Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20 * scale, vertical: 0 * scale),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFBFBFB),
-            border: Border(
-              top: BorderSide(color: const Color(0xFFE3E3E3), width: 1 * scale),
-            ),
+          decoration: const BoxDecoration(
+            color: Colors.transparent,
           ),
           child: cards.isEmpty
               ? SizedBox(

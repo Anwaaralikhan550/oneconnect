@@ -4,7 +4,6 @@ import 'package:share_plus/share_plus.dart';
 import '../utils/contact_utils.dart';
 import '../widgets/give_review_dialog.dart';
 import '../widgets/photos_and_videos_section.dart';
-import '../widgets/partner_media_gallery.dart';
 
 class DryCleanerScreen extends StatelessWidget {
   final Map<String, dynamic>? cleanerData;
@@ -876,22 +875,6 @@ class DryCleanerScreen extends StatelessWidget {
                     ),
                   ),
               ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: PartnerMediaGallery(
-              items: reviews
-                  .whereType<Map>()
-                  .map((review) => Map<String, dynamic>.from(review))
-                  .where((r) => (r['mediaUrl'] ?? r['imageUrl'] ?? '').toString().isNotEmpty)
-                  .map((r) => PartnerGalleryItem(
-                        id: (r['id'] ?? '').toString(),
-                        mediaType: (r['mediaType'] ?? 'PHOTO').toString(),
-                        fileUrl: (r['mediaUrl'] ?? r['imageUrl'] ?? '').toString(),
-                      ))
-                  .toList(),
-              hideWhenEmpty: true,
             ),
           ),
         ],

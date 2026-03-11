@@ -19,6 +19,7 @@ import '../widgets/special_offers_section.dart';
 import '../widgets/review_us_section.dart' as review_widgets;
 import '../widgets/location_section.dart';
 import '../widgets/detail_screen_header.dart';
+import '../utils/contact_utils.dart';
 
 class PharmacyDetailScreen extends StatefulWidget {
   final Map<String, dynamic>? pharmacyData;
@@ -48,6 +49,10 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen>
     return Consumer<BusinessProvider>(
       builder: (context, provider, _) {
     final detail = provider.getAmenityDetail(widget.pharmacyData?['id'] ?? '');
+    final phone =
+        (detail?.phone ?? widget.pharmacyData?['phone']?.toString() ?? '').trim();
+    final whatsapp =
+        (detail?.whatsapp ?? widget.pharmacyData?['whatsapp']?.toString() ?? phone).trim();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -76,6 +81,10 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen>
                   LocationSection(
               locationText: detail?.location ?? widget.pharmacyData?['location'] ?? '',
             ),
+                  if (phone.isNotEmpty || whatsapp.isNotEmpty) ...[
+                    SizedBox(height: rh(9)),
+                    _buildContactCard(context, phone: phone, whatsapp: whatsapp),
+                  ],
                   SizedBox(height: rh(9)),
                   _buildServicesSection(),
                   SizedBox(height: rh(10)),
@@ -137,6 +146,81 @@ class _PharmacyDetailScreenState extends State<PharmacyDetailScreen>
     );
   }
 
+
+  Widget _buildContactCard(
+    BuildContext context, {
+    required String phone,
+    required String whatsapp,
+  }) {
+    final String effectiveWhatsapp = whatsapp.isNotEmpty ? whatsapp : phone;
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: rw(15)),
+      padding: EdgeInsets.symmetric(horizontal: rw(15), vertical: rw(15)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(rw(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            offset: const Offset(0, 2),
+            blurRadius: 8,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Flexible(
+            child: GestureDetector(
+              onTap: () async => callPhoneNumber(context, phone),
+              child: Row(
+                children: [
+                  SvgPicture.asset('assets/icons/phone_icon.svg', width: rw(19), height: rw(19)),
+                  SizedBox(width: rw(5)),
+                  Flexible(
+                    child: Text(
+                      phone.isNotEmpty ? phone : 'No phone available',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: rfs(13),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF000000),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(width: rw(40)),
+          Flexible(
+            child: GestureDetector(
+              onTap: () async => openWhatsAppForNumber(context, effectiveWhatsapp),
+              child: Row(
+                children: [
+                  SvgPicture.asset('assets/icons/whatsapp_icon.svg', width: rw(25), height: rw(25)),
+                  SizedBox(width: rw(5)),
+                  Flexible(
+                    child: Text(
+                      effectiveWhatsapp.isNotEmpty ? effectiveWhatsapp : 'N/A',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: rfs(13),
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF000000),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   // PROFILE SECTION
   Widget _buildProfileSection(AmenityModel? detail) {

@@ -3,7 +3,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../providers/business_provider.dart';
 import '../providers/review_provider.dart';
 import '../models/business_model.dart';
@@ -648,12 +647,7 @@ class _GroceryStoreScreenState extends State<GroceryStoreScreen>
           Flexible(
             child: GestureDetector(
               onTap: () async {
-                if (phone.isNotEmpty) {
-                  final url = Uri.parse('tel:$phone');
-                  if (await canLaunchUrl(url)) {
-                    await launchUrl(url);
-                  }
-                }
+                await callPhoneNumber(context, phone);
               },
               child: Row(
                 children: [
